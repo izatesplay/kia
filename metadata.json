@@ -1,0 +1,8 @@
+{
+  "name": "Kianour Partovi Portfolio",
+  "description": "وب‌سایت رسمی و هنری کیانور پرتوی - نوازنده، آهنگساز و تهیه‌کننده موسیقی با بیش از ۲۰ سال سابقه حرفه‌ای",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
