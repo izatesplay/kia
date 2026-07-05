@@ -51,6 +51,12 @@ export default function App() {
   // State for dynamic user-uploaded tracks from IndexedDB
   const [customTracks, setCustomTracks] = useState<Track[]>([]);
 
+  // Track IDs of deleted default tracks
+  const [deletedDefaultIds, setDeletedDefaultIds] = useState<string[]>(() => {
+    const saved = localStorage.getItem('kianour_deleted_default_tracks');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   useEffect(() => {
     getTracksFromDB()
       .then((data) => setCustomTracks(data))
@@ -64,12 +70,20 @@ export default function App() {
   };
 
   const handleDeleteTrack = async (id: string) => {
-    await deleteTrackFromDB(id);
-    const updated = await getTracksFromDB();
-    setCustomTracks(updated);
+    // If it is a default track, add to deleted default IDs list
+    if (defaultTracks.some(t => t.id === id)) {
+      const updated = [...deletedDefaultIds, id];
+      setDeletedDefaultIds(updated);
+      localStorage.setItem('kianour_deleted_default_tracks', JSON.stringify(updated));
+    } else {
+      await deleteTrackFromDB(id);
+      const updated = await getTracksFromDB();
+      setCustomTracks(updated);
+    }
   };
 
-  const allTracks = [...defaultTracks, ...customTracks];
+  const activeDefaultTracks = defaultTracks.filter(track => !deletedDefaultIds.includes(track.id));
+  const allTracks = [...activeDefaultTracks, ...customTracks];
 
   // Sync messages to localStorage
   useEffect(() => {
@@ -235,7 +249,7 @@ export default function App() {
             onUpdateBio={handleUpdateBio}
             ambientSound={ambientSound}
             setAmbientSound={setAmbientSound}
-            customTracks={customTracks}
+            allTracks={allTracks}
             onAddTrack={handleAddTrack}
             onDeleteTrack={handleDeleteTrack}
           />

@@ -16,7 +16,7 @@ interface AdminPanelProps {
   onUpdateBio: (text: string) => void;
   ambientSound: boolean;
   setAmbientSound: (sound: boolean) => void;
-  customTracks: Track[];
+  allTracks: Track[];
   onAddTrack: (track: Track) => void;
   onDeleteTrack: (id: string) => void;
 }
@@ -30,7 +30,7 @@ export default function AdminPanel({
   onUpdateBio,
   ambientSound,
   setAmbientSound,
-  customTracks,
+  allTracks,
   onAddTrack,
   onDeleteTrack
 }: AdminPanelProps) {
@@ -201,35 +201,23 @@ export default function AdminPanel({
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className="relative w-full max-w-2xl h-full bg-[#111111] border-l-2 border-gold-400/30 text-gray-200 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col z-50"
       >
-        
-        {/* Panel Header */}
-        <div className="bg-[#181818] border-b border-[#2c3338] px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded bg-gold-400/10 text-gold-400">
-              <Terminal className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-[#f0f0f1] font-sans">پیشخوان وردپرس کیانور پرتوی</h2>
-              <span className="text-[10px] text-gray-400 block">مدیریت آنلاین محتوا و موسیقی‌ها</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            {isAuthenticated && (
-              <button 
-                onClick={handleLogout}
-                className="text-[10px] text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/50 px-2 py-1 rounded bg-red-500/5 transition-all cursor-pointer font-sans"
-              >
-                خروج از سیستم
-              </button>
-            )}
+        {/* Absolute floating controls (No top bar) */}
+        <div className="absolute top-4 left-4 z-50 flex items-center gap-2" dir="ltr">
+          <button 
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#2c3338] transition-colors cursor-pointer bg-black/40 border border-[#2c3338] backdrop-blur-sm shadow-md"
+            title="بستن"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          {isAuthenticated && (
             <button 
-              onClick={onClose}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#2c3338] transition-colors cursor-pointer"
+              onClick={handleLogout}
+              className="text-[10px] text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/50 px-2.5 py-1.5 rounded-lg bg-red-500/5 hover:bg-red-500/10 transition-all cursor-pointer font-sans shadow-md"
             >
-              <X className="w-5 h-5" />
+              خروج از سیستم
             </button>
-          </div>
+          )}
         </div>
 
         {/* Conditional Rendering: Login vs Admin Dashboard */}
@@ -312,7 +300,7 @@ export default function AdminPanel({
         ) : (
           <>
             {/* Tab Navigation */}
-            <div className="bg-[#181818] border-b border-[#2c3338] px-4 flex items-center gap-1">
+            <div className="bg-[#181818] border-b border-[#2c3338] px-4 pl-36 flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-thin flex-shrink-0">
               <button
                 onClick={() => setActiveTab('inbox')}
                 className={`px-4 py-3 text-xs font-bold border-b-2 flex items-center gap-2 cursor-pointer transition-colors ${
@@ -346,7 +334,7 @@ export default function AdminPanel({
                 }`}
               >
                 <Music className="w-4 h-4" />
-                <span>مدیریت موزیک‌ها ({customTracks.length})</span>
+                <span>مدیریت موزیک‌ها ({allTracks.length})</span>
               </button>
 
               <button
@@ -476,7 +464,7 @@ export default function AdminPanel({
                   >
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-bold text-[#f0f0f1]">مدیریت و آپلود موسیقی‌های من</h3>
-                      <span className="text-[10px] text-gray-500">مجموع قطعات بارگذاری شده: {customTracks.length}</span>
+                      <span className="text-[10px] text-gray-500">مجموع قطعات قابل پخش: {allTracks.length} اثر</span>
                     </div>
 
                     {/* Form Block */}
@@ -617,49 +605,59 @@ export default function AdminPanel({
 
                     {/* Uploaded List Block */}
                     <div className="space-y-3 font-sans text-right">
-                      <span className="text-xs font-bold text-gray-400 block">قطعات موسیقی آپلود شده اختصاصی شما:</span>
+                      <span className="text-xs font-bold text-gray-400 block">لیست تمام آثار موسیقی (پیش‌فرض و سفارشی):</span>
                       
-                      {customTracks.length === 0 ? (
+                      {allTracks.length === 0 ? (
                         <div className="border border-dashed border-[#2c3338] rounded-xl p-6 text-center text-gray-500 text-xs">
-                          هنوز هیچ قطعه اختصاصی اضافه نکرده‌اید. با استفاده از فرم بالا می‌توانید اولین آهنگ خود را بارگذاری کنید.
+                          هیچ قطعه موسیقی در حال حاضر وجود ندارد. با استفاده از فرم بالا می‌توانید اثر جدیدی اضافه کنید.
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          {customTracks.map((track) => (
-                            <div 
-                              key={track.id}
-                              className="bg-[#2c3338]/10 border border-[#2c3338] rounded-xl p-3 flex items-center justify-between gap-4 hover:border-gold-400/25 transition-all"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded bg-black border border-gold-400/10 overflow-hidden flex-shrink-0">
-                                  <img 
-                                    src={track.coverUrl} 
-                                    alt={track.title} 
-                                    className="w-full h-full object-cover" 
-                                    referrerPolicy="no-referrer"
-                                  />
-                                </div>
-                                <div className="text-right">
-                                  <h4 className="text-xs font-bold text-white">{track.title}</h4>
-                                  <div className="flex items-center gap-1.5 mt-0.5">
-                                    <span className="text-[9px] bg-gold-400/10 text-gold-300 px-1.5 py-0.2 rounded">{track.genre}</span>
-                                    <span className="text-[9px] text-gray-500">{track.year}</span>
+                          {allTracks.map((track) => {
+                            const isDefault = !track.id.toString().startsWith('custom-');
+                            return (
+                              <div 
+                                key={track.id}
+                                className="bg-[#2c3338]/10 border border-[#2c3338] rounded-xl p-3 flex items-center justify-between gap-4 hover:border-gold-400/25 transition-all"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded bg-black border border-gold-400/10 overflow-hidden flex-shrink-0">
+                                    <img 
+                                      src={track.coverUrl} 
+                                      alt={track.title} 
+                                      className="w-full h-full object-cover" 
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="flex items-center gap-2">
+                                      <h4 className="text-xs font-bold text-white">{track.title}</h4>
+                                      {isDefault ? (
+                                        <span className="text-[8px] bg-blue-500/10 text-blue-300 border border-blue-500/20 px-1 py-0.2 rounded">پیش‌فرض</span>
+                                      ) : (
+                                        <span className="text-[8px] bg-gold-400/10 text-gold-300 border border-gold-400/20 px-1 py-0.2 rounded">کاربر</span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                      <span className="text-[9px] bg-[#2c3338] text-gray-400 px-1.5 py-0.2 rounded">{track.genre}</span>
+                                      <span className="text-[9px] text-gray-500">{track.year}</span>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
 
-                              <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-mono text-gray-500">{track.duration}</span>
-                                <button
-                                  onClick={() => onDeleteTrack(track.id)}
-                                  className="p-1.5 rounded text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer"
-                                  title="حذف موسیقی"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[10px] font-mono text-gray-500">{track.duration}</span>
+                                  <button
+                                    onClick={() => onDeleteTrack(track.id)}
+                                    className="p-1.5 rounded text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer"
+                                    title="حذف موسیقی"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
