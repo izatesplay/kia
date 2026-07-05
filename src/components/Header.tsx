@@ -125,21 +125,23 @@ export default function Header({
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
           {/* Logo / Title */}
-          <div className="flex items-center gap-3">
-            <div className="relative group">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold-600 to-gold-400 flex items-center justify-center border-2 border-gold-300 shadow-[0_0_15px_rgba(211,166,85,0.3)] cursor-pointer group-hover:rotate-12 transition-transform duration-300">
-                <Music className="w-5 h-5 text-black" />
-              </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#1e1c18] border border-gold-400 flex items-center justify-center">
-                <span className="text-[8px] text-gold-400 font-sans font-bold">20+</span>
-              </div>
+          <div 
+            onClick={() => setActiveSection('home')}
+            className="flex items-center gap-3 cursor-pointer group"
+          >
+            <div className="relative h-11 md:h-12 flex items-center">
+              <img 
+                src="/src/assets/images/kianour_signature_1783217105489.jpg" 
+                alt="لوگوی امضای استاد کیانور پرتوی" 
+                className="h-10 md:h-12 w-auto object-contain brightness-125 contrast-125 mix-blend-screen transition-all duration-300 group-hover:scale-105"
+                referrerPolicy="no-referrer"
+              />
             </div>
-            
-            <div className="flex flex-col">
-              <h1 className="font-display text-2xl tracking-wide text-gold-400 hover:text-gold-300 transition-colors cursor-pointer select-none gold-glow">
+            <div className="hidden sm:flex flex-col border-r border-gold-400/20 pr-3">
+              <h1 className="font-sans text-xs font-extrabold text-gold-400 tracking-wide gold-glow">
                 کیانور پرتوی
               </h1>
-              <span className="text-[10px] text-gold-200/60 font-medium tracking-widest -mt-1 font-sans uppercase">
+              <span className="text-[8px] text-gold-200/50 font-medium tracking-wider font-sans uppercase">
                 Guitarist, Composer & Producer
               </span>
             </div>

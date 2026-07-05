@@ -173,8 +173,13 @@ export default function App() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-center md:text-right">
           
           {/* Logo & Slogan */}
-          <div className="space-y-2">
-            <h3 className="font-display text-xl text-gold-400 tracking-wider">کیانور پرتوی</h3>
+          <div className="space-y-2 flex flex-col items-center md:items-start">
+            <img 
+              src="/src/assets/images/kianour_signature_1783217105489.jpg" 
+              alt="امضای استاد کیانور پرتوی" 
+              className="h-12 w-auto object-contain brightness-110 contrast-125 mix-blend-screen"
+              referrerPolicy="no-referrer"
+            />
             <p className="text-[11px] text-gray-500">خالق طنین‌های ماندگار جاز، سول و آهنگسازی کاربردی در ایران</p>
           </div>
 
