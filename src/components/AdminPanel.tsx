@@ -55,7 +55,7 @@ export default function AdminPanel({
   const [trackInstrument, setTrackInstrument] = useState('');
   const [trackDescription, setTrackDescription] = useState('');
   const [trackDuration, setTrackDuration] = useState('03:00');
-  const [coverDataUrl, setCoverDataUrl] = useState<string>('/src/assets/images/album_cover_jazz_1783212533166.jpg'); // default cover
+  const [coverDataUrl, setCoverDataUrl] = useState<string>('./assets/images/album_cover_jazz_1783212533166.jpg'); // default cover
   
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -165,7 +165,7 @@ export default function AdminPanel({
         setTrackInstrument('');
         setTrackDescription('');
         setTrackDuration('03:00');
-        setCoverDataUrl('/src/assets/images/album_cover_jazz_1783212533166.jpg');
+        setCoverDataUrl('./assets/images/album_cover_jazz_1783212533166.jpg');
         if (audioInputRef.current) audioInputRef.current.value = '';
         if (coverInputRef.current) coverInputRef.current.value = '';
 

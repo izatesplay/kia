@@ -175,7 +175,7 @@ export default function App() {
           {/* Logo & Slogan */}
           <div className="space-y-2 flex flex-col items-center md:items-start">
             <img 
-              src="/src/assets/images/kianour_signature_1783217105489.jpg" 
+              src="./assets/images/kianour_signature_1783217105489.jpg" 
               alt="امضای استاد کیانور پرتوی" 
               className="h-12 w-auto object-contain brightness-110 contrast-125 mix-blend-screen"
               referrerPolicy="no-referrer"

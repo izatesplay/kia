@@ -9,17 +9,17 @@ interface HeroProps {
 
 const heroImages = [
   {
-    url: '/src/assets/images/hero_image_1_1783213279475.jpg',
+    url: './assets/images/hero_image_1_1783213279475.jpg',
     caption: 'پرتره هنری استودیویی',
     sub: 'آهنگساز و نوازنده گیتار الکتریک جز'
   },
   {
-    url: '/src/assets/images/hero_image_2_1783213289225.jpg',
+    url: './assets/images/hero_image_2_1783213289225.jpg',
     caption: 'نمای نزدیک از نوازنده نوستالژیک',
     sub: 'تهیه‌کننده و مهندس صدای آنالوگ'
   },
   {
-    url: '/src/assets/images/hero_image_3_1783213299822.jpg',
+    url: './assets/images/hero_image_3_1783213299822.jpg',
     caption: 'استایل خیابانی در فضای باز',
     sub: 'رهبر ارکستر بزرگ جاز-پاپ تهران'
   }

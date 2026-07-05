@@ -17,8 +17,8 @@ export const kianourProfile = {
     { degree: 'کارشناسی نوازندگی موسیقی جهانی', school: 'کنسرواتوار موسیقی تهران', year: '۱۳۸۸' },
     { degree: 'دوره تخصصی مهندسی صدا و میکس و مسترینگ', school: 'آکادمی صدابرداری تهران', year: '۱۳۹۰' }
   ],
-  avatar: '/src/assets/images/kianour_profile_1783212521304.jpg',
-  cover: '/src/assets/images/album_cover_jazz_1783212533166.jpg'
+  avatar: './assets/images/kianour_profile_1783212521304.jpg',
+  cover: './assets/images/album_cover_jazz_1783212533166.jpg'
 };
 
 export const tracks: Track[] = [
@@ -29,7 +29,7 @@ export const tracks: Track[] = [
     genre: 'Smooth Jazz',
     duration: '05:12',
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-    coverUrl: '/src/assets/images/album_cover_jazz_1783212533166.jpg',
+    coverUrl: './assets/images/album_cover_jazz_1783212533166.jpg',
     description: 'تلفیقی رویایی از صدای باران، گیتار جاز لید و پدهای مخملی که حس و حال شب‌های پایانی پاییز تهران را تداعی می‌کند.',
     year: '۱۴۰۲',
     instrument: 'گیتار الکتریک جاز و سینث‌سایزر'
@@ -41,7 +41,7 @@ export const tracks: Track[] = [
     genre: 'Soul & RnB',
     duration: '07:05',
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-    coverUrl: '/src/assets/images/album_cover_jazz_1783212533166.jpg',
+    coverUrl: './assets/images/album_cover_jazz_1783212533166.jpg',
     description: 'ملودی آوازی بسیار عمیق همراه با بیس سنگین و آکوردهای نوستالژیک که پلی بین خاطرات گذشته و شلوغی‌های امروز تهران است.',
     year: '۱۴۰۱',
     instrument: 'آواز، گیتار نایلون و ارکستر زهی'
@@ -53,7 +53,7 @@ export const tracks: Track[] = [
     genre: 'Jazz Fusion',
     duration: '05:44',
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-    coverUrl: '/src/assets/images/album_cover_jazz_1783212533166.jpg',
+    coverUrl: './assets/images/album_cover_jazz_1783212533166.jpg',
     description: 'قطعه‌ای ریتمیک و جذاب با الهام از ملودی‌های فولکلور ایرانی در بستر جاز و فانک، اثری غنی از سازهای بادی و سولوی شنیدنی گیتار.',
     year: '۱۴۰۳',
     instrument: 'گیتار الکتریک، ترومپت و ساکسیفون'
@@ -65,7 +65,7 @@ export const tracks: Track[] = [
     genre: 'Funk & Groove',
     duration: '05:02',
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
-    coverUrl: '/src/assets/images/album_cover_jazz_1783212533166.jpg',
+    coverUrl: './assets/images/album_cover_jazz_1783212533166.jpg',
     description: 'قطعه‌ای سرشار از ریتم، انرژی بالا و ریتم‌های مقطع گیتار الکتریک که حس رهایی و شور و هیجان نوازندگی زنده را منتقل می‌کند.',
     year: '۱۴۰۰',
     instrument: 'گیتار الکتریک فندر استراتوکستر، درامز و بیس'

@@ -131,7 +131,7 @@ export default function Header({
           >
             <div className="relative h-11 md:h-12 flex items-center">
               <img 
-                src="/src/assets/images/kianour_signature_1783217105489.jpg" 
+                src="./assets/images/kianour_signature_1783217105489.jpg" 
                 alt="لوگوی امضای استاد کیانور پرتوی" 
                 className="h-10 md:h-12 w-auto object-contain brightness-125 contrast-125 mix-blend-screen transition-all duration-300 group-hover:scale-105"
                 referrerPolicy="no-referrer"
