@@ -9,7 +9,6 @@ import Contact from './components/Contact';
 import AdminPanel from './components/AdminPanel';
 import { ContactMessage, Track } from './types';
 import { kianourProfile, tracks as defaultTracks } from './data';
-import { getTracksFromDB, saveTrackToDB, deleteTrackFromDB } from './lib/db';
 
 const defaultMessages: ContactMessage[] = [
   {
@@ -36,65 +35,81 @@ export default function App() {
   const [ambientSound, setAmbientSound] = useState<boolean>(true);
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
   
-  // Loaded state for messages from localStorage
-  const [messages, setMessages] = useState<ContactMessage[]>(() => {
-    const saved = localStorage.getItem('kianour_contact_messages');
-    return saved ? JSON.parse(saved) : defaultMessages;
-  });
+  // Loaded state for messages from server
+  const [messages, setMessages] = useState<ContactMessage[]>(defaultMessages);
 
-  // Loaded bio content from localStorage
-  const [bioContent, setBioContent] = useState<string>(() => {
-    const saved = localStorage.getItem('kianour_bio_content');
-    return saved || kianourProfile.bio;
-  });
+  // Loaded bio content from server
+  const [bioContent, setBioContent] = useState<string>(kianourProfile.bio);
 
-  // State for dynamic user-uploaded tracks from IndexedDB
-  const [customTracks, setCustomTracks] = useState<Track[]>([]);
-
-  // Track IDs of deleted default tracks
-  const [deletedDefaultIds, setDeletedDefaultIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem('kianour_deleted_default_tracks');
-    return saved ? JSON.parse(saved) : [];
-  });
+  // Loaded tracks from server
+  const [allTracks, setAllTracks] = useState<Track[]>(defaultTracks);
 
   useEffect(() => {
-    getTracksFromDB()
-      .then((data) => setCustomTracks(data))
-      .catch((err) => console.error("Error loading custom tracks from IndexedDB", err));
+    // 1. Fetch tracks
+    fetch('/api/tracks')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setAllTracks(data);
+        }
+      })
+      .catch(err => console.error("Error loading tracks from server:", err));
+
+    // 2. Fetch bio
+    fetch('/api/bio')
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.bio === 'string') {
+          setBioContent(data.bio);
+          kianourProfile.bio = data.bio;
+        }
+      })
+      .catch(err => console.error("Error loading bio from server:", err));
+
+    // 3. Fetch messages
+    fetch('/api/messages')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setMessages(data);
+        }
+      })
+      .catch(err => console.error("Error loading messages from server:", err));
   }, []);
 
   const handleAddTrack = async (newTrack: Track) => {
-    await saveTrackToDB(newTrack);
-    const updated = await getTracksFromDB();
-    setCustomTracks(updated);
-  };
-
-  const handleDeleteTrack = async (id: string) => {
-    // If it is a default track, add to deleted default IDs list
-    if (defaultTracks.some(t => t.id === id)) {
-      const updated = [...deletedDefaultIds, id];
-      setDeletedDefaultIds(updated);
-      localStorage.setItem('kianour_deleted_default_tracks', JSON.stringify(updated));
-    } else {
-      await deleteTrackFromDB(id);
-      const updated = await getTracksFromDB();
-      setCustomTracks(updated);
+    try {
+      const res = await fetch('/api/tracks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newTrack)
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.tracks)) {
+        setAllTracks(data.tracks);
+      }
+    } catch (err) {
+      console.error("Error adding track to server:", err);
+      alert("خطا در بارگذاری موزیک روی سرور");
     }
   };
 
-  const activeDefaultTracks = defaultTracks.filter(track => !deletedDefaultIds.includes(track.id));
-  const allTracks = [...activeDefaultTracks, ...customTracks];
-
-  // Sync messages to localStorage
-  useEffect(() => {
-    localStorage.setItem('kianour_contact_messages', JSON.stringify(messages));
-  }, [messages]);
-
-  // Sync bio content to localStorage
-  useEffect(() => {
-    localStorage.setItem('kianour_bio_content', bioContent);
-    kianourProfile.bio = bioContent; // Sync back to the memory data structure
-  }, [bioContent]);
+  const handleDeleteTrack = async (id: string) => {
+    try {
+      const res = await fetch(`/api/tracks/${id}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.tracks)) {
+        setAllTracks(data.tracks);
+      }
+    } catch (err) {
+      console.error("Error deleting track from server:", err);
+      alert("خطا در حذف موزیک از سرور");
+    }
+  };
 
   // Monitor scroll for top button
   useEffect(() => {
@@ -105,16 +120,59 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleAddMessage = (newMessage: ContactMessage) => {
-    setMessages((prev) => [newMessage, ...prev]);
+  const handleAddMessage = async (newMessage: ContactMessage) => {
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: newMessage.name,
+          email: newMessage.email,
+          subject: newMessage.subject,
+          message: newMessage.message
+        })
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.messages)) {
+        setMessages(data.messages);
+      }
+    } catch (err) {
+      console.error("Error sending message to server:", err);
+      setMessages((prev) => [newMessage, ...prev]);
+    }
   };
 
-  const handleDeleteMessage = (id: string) => {
-    setMessages((prev) => prev.filter((m) => m.id !== id));
+  const handleDeleteMessage = async (id: string) => {
+    try {
+      const res = await fetch(`/api/messages/${id}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.messages)) {
+        setMessages(data.messages);
+      }
+    } catch (err) {
+      console.error("Error deleting message from server:", err);
+      setMessages((prev) => prev.filter((m) => m.id !== id));
+    }
   };
 
-  const handleUpdateBio = (newBio: string) => {
+  const handleUpdateBio = async (newBio: string) => {
     setBioContent(newBio);
+    kianourProfile.bio = newBio;
+    try {
+      await fetch('/api/bio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ bio: newBio })
+      });
+    } catch (err) {
+      console.error("Error saving bio to server:", err);
+    }
   };
 
   const handleNavigateToSection = (sectionId: string) => {

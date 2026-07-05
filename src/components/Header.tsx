@@ -31,95 +31,6 @@ export default function Header({
 
   return (
     <header className="sticky top-0 z-50 w-full" id="site-header" dir="rtl">
-      {/* WordPress-inspired Admin Bar Easter Egg */}
-      <div className="bg-[#1d2327] text-[#f0f0f1] text-xs h-8 flex items-center justify-between px-4 border-b border-[#2c3338] select-none font-sans">
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <button 
-              onClick={() => setIsWpMenuOpen(!isWpMenuOpen)}
-              className="flex items-center gap-1.5 hover:bg-[#2c3338] hover:text-[#72aee6] px-3 py-2 h-8 cursor-pointer transition-colors"
-            >
-              <Terminal className="w-3.5 h-3.5 text-gold-400" />
-              <span className="font-bold">پیشخوان وردپرس کیانور</span>
-              <ChevronDown className="w-3 h-3" />
-            </button>
-            
-            <AnimatePresence>
-              {isWpMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setIsWpMenuOpen(false)} />
-                  <motion.div 
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 5 }}
-                    className="absolute right-0 top-8 z-20 w-56 bg-[#1d2327] border border-[#2c3338] shadow-2xl py-1 text-right text-gray-300 rounded-b"
-                  >
-                    <button 
-                      onClick={() => {
-                        setShowAdminPanel(!showAdminPanel);
-                        setIsWpMenuOpen(false);
-                      }}
-                      className="w-full text-right px-4 py-2 hover:bg-[#2c3338] hover:text-[#72aee6] flex items-center justify-between"
-                    >
-                      <span>{showAdminPanel ? 'بستن پیشخوان مدیریت' : 'ورود به پنل مدیریت وردپرس'}</span>
-                      <Settings className="w-3.5 h-3.5 text-gold-400" />
-                    </button>
-                    <div className="border-t border-[#2c3338] my-1" />
-                    <div className="px-4 py-1.5 text-[10px] text-gray-500">پوسته فعال: نوستالژی طلایی جاز</div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <button 
-            onClick={() => setShowAdminPanel(!showAdminPanel)}
-            className="hidden md:flex items-center gap-1.5 hover:bg-[#2c3338] hover:text-[#72aee6] px-3 py-2 h-8 cursor-pointer transition-colors"
-          >
-            <Settings className="w-3.5 h-3.5 text-gray-400" />
-            <span>مدیریت پوسته</span>
-          </button>
-
-          <a 
-            href="#music"
-            onClick={(e) => {
-              e.preventDefault();
-              setActiveSection('music');
-            }}
-            className="hidden md:flex items-center gap-1.5 hover:bg-[#2c3338] hover:text-[#72aee6] px-3 py-2 h-8 cursor-pointer transition-colors"
-          >
-            <Music className="w-3.5 h-3.5 text-gray-400" />
-            <span>پخش موسیقی</span>
-          </a>
-        </div>
-
-        <div className="flex items-center gap-4">
-          {/* Ambient Sound Effects Toggle */}
-          <button
-            onClick={() => setAmbientSound(!ambientSound)}
-            className="flex items-center gap-1.5 hover:bg-[#2c3338] px-3 py-2 h-8 text-gold-400 font-medium cursor-pointer transition-colors"
-            title={ambientSound ? "قطع صدای شبیه‌ساز گرامافون" : "پخش صدای خش‌خش گرامافون قدیمی"}
-          >
-            {ambientSound ? (
-              <>
-                <Volume2 className="w-3.5 h-3.5 text-gold-400 animate-pulse" />
-                <span className="hidden sm:inline text-gold-300">افکت گرامافون فعال</span>
-              </>
-            ) : (
-              <>
-                <VolumeX className="w-3.5 h-3.5 text-gray-500" />
-                <span className="hidden sm:inline text-gray-400">افکت گرامافون غیرفعال</span>
-              </>
-            )}
-          </button>
-
-          <div className="hidden sm:flex items-center gap-1.5 text-[#a7aaad]">
-            <span>سلام، استاد کیانور پرتوی</span>
-            <div className="w-5 h-5 rounded-full bg-gold-600 border border-gold-400 flex items-center justify-center text-[10px] font-bold text-black font-sans">ک</div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Public Header */}
       <nav className="bg-[#0f0e0c]/95 backdrop-blur-md border-b-2 border-gold-400/20 shadow-lg px-4 py-3 md:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -175,8 +86,25 @@ export default function Header({
             })}
           </div>
 
-          {/* Social Icons & Call To Action */}
-          <div className="hidden lg:flex items-center gap-3">
+          {/* Ambient Sound & Call To Action */}
+          <div className="hidden md:flex items-center gap-3.5">
+            {/* Ambient Sound Toggle */}
+            <button
+              onClick={() => setAmbientSound(!ambientSound)}
+              className={`p-2 rounded-full border transition-all cursor-pointer flex items-center justify-center ${
+                ambientSound 
+                  ? 'bg-gold-400/15 border-gold-400 text-gold-400 shadow-[0_0_12px_rgba(211,166,85,0.25)]' 
+                  : 'bg-transparent border-gray-400/20 text-gray-400 hover:border-gold-400/40 hover:text-gold-300'
+              }`}
+              title={ambientSound ? "قطع صدای شبیه‌ساز گرامافون" : "پخش صدای خش‌خش گرامافون قدیمی"}
+            >
+              {ambientSound ? (
+                <Volume2 className="w-4 h-4 animate-pulse" />
+              ) : (
+                <VolumeX className="w-4 h-4" />
+              )}
+            </button>
+
             <button
               onClick={() => setActiveSection('contact')}
               className="bg-gradient-to-r from-gold-600 to-gold-400 hover:from-gold-500 hover:to-gold-300 text-black font-sans font-bold text-xs px-5 py-2 rounded-full border border-gold-300 shadow-[0_4px_12px_rgba(194,135,50,0.2)] hover:shadow-[0_4px_16px_rgba(194,135,50,0.4)] active:scale-95 transition-all cursor-pointer"
@@ -232,7 +160,19 @@ export default function Header({
                   </button>
                 );
               })}
-              <div className="border-t border-gold-400/10 pt-2 mt-2">
+              <div className="border-t border-gold-400/10 pt-3 mt-2 space-y-2">
+                <button
+                  onClick={() => setAmbientSound(!ambientSound)}
+                  className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+                    ambientSound 
+                      ? 'bg-gold-400/10 border-gold-400 text-gold-400' 
+                      : 'bg-[#14120e] border-gray-400/10 text-gray-400'
+                  }`}
+                >
+                  {ambientSound ? <Volume2 className="w-4 h-4 animate-pulse" /> : <VolumeX className="w-4 h-4" />}
+                  <span>{ambientSound ? "افکت صدای گرامافون: فعال" : "افکت صدای گرامافون: غیرفعال"}</span>
+                </button>
+
                 <button
                   onClick={() => {
                     setActiveSection('contact');
