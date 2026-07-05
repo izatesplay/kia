@@ -138,7 +138,7 @@ export default function Contact({ onAddMessage }: ContactProps) {
                   <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                   <div>
                     <span className="font-bold">پیام شما با موفقیت در سیستم ثبت شد!</span>
-                    <span className="block mt-0.5 text-emerald-400/70">می‌توانید پیام ارسالی خود را با کلیک روی «پیشخوان وردپرس» در نوار بالای سایت مشاهده فرمایید.</span>
+                    <span className="block mt-0.5 text-emerald-400/70">می‌توانید پیام ارسالی خود را در بخش مدیریت پیام‌های پنل مدیریت مشاهده فرمایید.</span>
                   </div>
                 </motion.div>
               )}

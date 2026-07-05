@@ -244,7 +244,7 @@ export default function App() {
           {/* Copyrights */}
           <div className="text-center text-xs text-gray-500 font-sans space-y-1">
             <p>© تمام حقوق معنوی و هنری متعلق به استاد کیانور پرتوی می‌باشد.</p>
-            <p className="text-[10px] text-gray-600">پوسته وردپرس نوستالژیک - طراحی شده با فریم‌ورک قدرتمند ری‌اکت و تیلوند</p>
+            <p className="text-[10px] text-gray-600">وب‌سایت رسمی و هنری کیانور پرتوی - توسعه‌یافته با ری‌اکت و تیلوند</p>
           </div>
 
           {/* Social Links & Easter Eggs */}
@@ -261,21 +261,21 @@ export default function App() {
               onClick={() => setShowAdminPanel(true)}
               className="text-gold-400 hover:text-gold-300 transition-all font-bold cursor-pointer"
             >
-              پیشخوان مدیریت
+              پنل مدیریت استاد
             </button>
           </div>
 
         </div>
       </footer>
 
-      {/* Floating WordPress Indicator badge on bottom left if admin panel is closed */}
+      {/* Floating Indicator badge on bottom left if admin panel is closed */}
       {!showAdminPanel && (
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           onClick={() => setShowAdminPanel(true)}
           className="fixed bottom-6 left-6 z-40 bg-gradient-to-r from-[#1d2327] to-[#2c3338] hover:from-[#2c3338] hover:to-[#1d2327] text-gold-400 hover:text-gold-300 border border-gold-400/30 w-12 h-12 rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.5)] flex items-center justify-center cursor-pointer transition-all active:scale-95 group"
-          title="ورود به بخش پیشخوان وردپرس"
+          title="ورود به پنل مدیریت"
         >
           <div className="relative">
             <Disc className="w-5 h-5 text-gold-400 animate-spin-slow group-hover:text-gold-300" />

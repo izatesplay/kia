@@ -124,6 +124,7 @@ export default function AdminPanel({
   const handleTrackUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     const audioFileInput = audioInputRef.current?.files?.[0];
+    const coverFileInput = coverInputRef.current?.files?.[0];
     
     if (!trackTitle.trim()) {
       alert('لطفاً عنوان اثر را وارد کنید.');
@@ -137,45 +138,77 @@ export default function AdminPanel({
     setIsUploading(true);
 
     try {
-      // Read audio file into base64 string
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const audioDataUrl = reader.result as string;
+      // 1. Upload audio file via standard FormData stream
+      const audioFormData = new FormData();
+      audioFormData.append('file', audioFileInput);
+      
+      const audioUploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: audioFormData
+      });
+      
+      if (!audioUploadRes.ok) {
+        throw new Error('Failed to upload audio file');
+      }
+      
+      const audioUploadData = await audioUploadRes.json();
+      if (!audioUploadData.success || !audioUploadData.url) {
+        throw new Error('Invalid audio upload response');
+      }
+      
+      const finalAudioUrl = audioUploadData.url;
 
-        const newTrack: Track = {
-          id: `custom-${Date.now()}`,
-          title: trackTitle.trim(),
-          titleEn: trackTitleEn.trim() || 'Custom Track',
-          genre: trackGenre,
-          duration: trackDuration,
-          audioUrl: audioDataUrl,
-          coverUrl: coverDataUrl,
-          description: trackDescription.trim() || 'قطعه اختصاصی آپلود شده توسط مدیر سایت',
-          year: trackYear.trim() || '۱۴۰۳',
-          instrument: trackInstrument.trim() || 'گیتار و سازهای سینث‌سایزر'
-        };
-
-        onAddTrack(newTrack);
-        setIsUploading(false);
-        setUploadSuccess(true);
+      // 2. Upload cover image via standard FormData stream if exists
+      let finalCoverUrl = './assets/images/album_cover_jazz_1783212533166.jpg';
+      if (coverFileInput) {
+        const coverFormData = new FormData();
+        coverFormData.append('file', coverFileInput);
         
-        // Reset Form
-        setTrackTitle('');
-        setTrackTitleEn('');
-        setTrackInstrument('');
-        setTrackDescription('');
-        setTrackDuration('03:00');
-        setCoverDataUrl('./assets/images/album_cover_jazz_1783212533166.jpg');
-        if (audioInputRef.current) audioInputRef.current.value = '';
-        if (coverInputRef.current) coverInputRef.current.value = '';
+        const coverUploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: coverFormData
+        });
+        
+        if (coverUploadRes.ok) {
+          const coverUploadData = await coverUploadRes.json();
+          if (coverUploadData.success && coverUploadData.url) {
+            finalCoverUrl = coverUploadData.url;
+          }
+        }
+      }
 
-        setTimeout(() => setUploadSuccess(false), 4000);
+      // 3. Construct clean metadata and invoke onAddTrack to save it permanently
+      const newTrack: Track = {
+        id: `custom-${Date.now()}`,
+        title: trackTitle.trim(),
+        titleEn: trackTitleEn.trim() || 'Custom Track',
+        genre: trackGenre,
+        duration: trackDuration,
+        audioUrl: finalAudioUrl,
+        coverUrl: finalCoverUrl,
+        description: trackDescription.trim() || 'قطعه اختصاصی آپلود شده توسط مدیر سایت',
+        year: trackYear.trim() || '۱۴۰۳',
+        instrument: trackInstrument.trim() || 'گیتار و سازهای سینث‌سایزر'
       };
 
-      reader.readAsDataURL(audioFileInput);
+      await onAddTrack(newTrack);
+      setIsUploading(false);
+      setUploadSuccess(true);
+      
+      // Reset Form
+      setTrackTitle('');
+      setTrackTitleEn('');
+      setTrackInstrument('');
+      setTrackDescription('');
+      setTrackDuration('03:00');
+      setCoverDataUrl('./assets/images/album_cover_jazz_1783212533166.jpg');
+      if (audioInputRef.current) audioInputRef.current.value = '';
+      if (coverInputRef.current) coverInputRef.current.value = '';
+
+      setTimeout(() => setUploadSuccess(false), 4000);
     } catch (err) {
       console.error(err);
-      alert('خطا در بارگذاری فایل صوتی. لطفاً فایل کوچک‌تری را امتحان کنید.');
+      alert('خطا در بارگذاری فایل‌های صوتی یا تصویر روی سرور. لطفاً مجدداً تلاش کنید یا فایل کوچک‌تری انتخاب کنید.');
       setIsUploading(false);
     }
   };
@@ -674,8 +707,8 @@ export default function AdminPanel({
                     className="space-y-5"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-[#f0f0f1]">تنظیمات عمومی پوسته نوستالژی</h3>
-                      <span className="text-[10px] text-gray-500">ویژگی‌های تعاملی قالب وردپرس</span>
+                      <h3 className="text-sm font-bold text-[#f0f0f1]">تنظیمات عمومی سایت</h3>
+                      <span className="text-[10px] text-gray-500">ویژگی‌های تعاملی پورتفولیو</span>
                     </div>
 
                     <div className="space-y-4 font-sans">
@@ -716,7 +749,7 @@ export default function AdminPanel({
                         className="w-full py-2.5 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white border border-[#2c3338] rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
-                        <span>بازنشانی پیش‌فرض‌های وردپرس</span>
+                        <span>بازنشانی پیش‌فرض‌های سیستم</span>
                       </button>
                     </div>
                   </motion.div>
@@ -727,10 +760,10 @@ export default function AdminPanel({
 
             {/* Panel Footer */}
             <div className="bg-[#181818] border-t border-[#2c3338] px-6 py-4.5 flex items-center justify-between text-[11px] text-[#a7aaad] font-sans">
-              <span>نسخه وردپرس سفارشی: ۶.۴.۲ - طنین طلایی</span>
+              <span>نسخه سامانه مدیریت: ۱.۴.۰ - طنین طلایی</span>
               <div className="flex items-center gap-1 text-gold-400">
                 <Star className="w-3 h-3 fill-gold-400" />
-                <span>طراحی نوستالژیک خلاقانه</span>
+                <span>طراحی پورتفولیو خلاقانه</span>
               </div>
             </div>
           </>
