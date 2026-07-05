@@ -4,12 +4,36 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import multer from 'multer';
+import mysql from 'mysql2/promise';
 
 // ESM path helpers
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 3000;
+
+// Setup MySQL Connection Pool with graceful fallback
+let dbPool: mysql.Pool | null = null;
+
+if (process.env.DB_HOST && process.env.DB_NAME) {
+  try {
+    dbPool = mysql.createPool({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      port: Number(process.env.DB_PORT || 3306),
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+      connectTimeout: 10000 // 10 seconds timeout
+    });
+    console.log('MySQL Connection Pool initialized.');
+  } catch (err) {
+    console.error('MySQL Connection Pool initialization failed:', err);
+    dbPool = null;
+  }
+}
 
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -132,6 +156,85 @@ async function startServer() {
   app.use(express.json({ limit: '100mb' }));
   app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
+  // Initialize MySQL tables if connection is available
+  if (dbPool) {
+    try {
+      console.log('Testing MySQL database connection...');
+      const connection = await dbPool.getConnection();
+      console.log('Successfully connected to MySQL database!');
+      
+      // Create tables if not exist
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS tracks (
+          id VARCHAR(100) PRIMARY KEY,
+          title VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+          titleEn VARCHAR(255) NOT NULL,
+          genre VARCHAR(100),
+          duration VARCHAR(50),
+          audioUrl VARCHAR(500) NOT NULL,
+          coverUrl VARCHAR(500),
+          description TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+          year VARCHAR(50),
+          instrument VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS messages (
+          id VARCHAR(100) PRIMARY KEY,
+          name VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+          email VARCHAR(255) NOT NULL,
+          subject VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+          message TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+          createdAt VARCHAR(100)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS bio (
+          id INT PRIMARY KEY AUTO_INCREMENT,
+          content TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+
+      // Seed default tracks if empty
+      const [existingTracks]: any = await connection.query('SELECT COUNT(*) as count FROM tracks');
+      if (existingTracks[0].count === 0) {
+        for (const track of DEFAULT_TRACKS) {
+          await connection.query(
+            'INSERT INTO tracks (id, title, titleEn, genre, duration, audioUrl, coverUrl, description, year, instrument) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [track.id, track.title, track.titleEn, track.genre, track.duration, track.audioUrl, track.coverUrl, track.description, track.year, track.instrument]
+          );
+        }
+        console.log('Default tracks seeded to MySQL.');
+      }
+
+      // Seed default messages if empty
+      const [existingMessages]: any = await connection.query('SELECT COUNT(*) as count FROM messages');
+      if (existingMessages[0].count === 0) {
+        for (const msg of DEFAULT_MESSAGES) {
+          await connection.query(
+            'INSERT INTO messages (id, name, email, subject, message, createdAt) VALUES (?, ?, ?, ?, ?, ?)',
+            [msg.id, msg.name, msg.email, msg.subject, msg.message, msg.createdAt]
+          );
+        }
+        console.log('Default messages seeded to MySQL.');
+      }
+
+      // Seed default bio if empty
+      const [existingBio]: any = await connection.query('SELECT COUNT(*) as count FROM bio');
+      if (existingBio[0].count === 0) {
+        await connection.query('INSERT INTO bio (content) VALUES (?)', [DEFAULT_BIO]);
+        console.log('Default bio seeded to MySQL.');
+      }
+
+      connection.release();
+    } catch (err) {
+      console.error('MySQL database initialization failed, falling back to local JSON files:', err);
+      dbPool = null; // Mark as null to fallback
+    }
+  }
+
   // Ensure directories exist
   const uploadsDir = path.join(process.cwd(), 'public/uploads');
   if (!fs.existsSync(uploadsDir)) {
@@ -178,8 +281,12 @@ async function startServer() {
   });
 
   // GET tracks
-  app.get('/api/tracks', (req, res) => {
+  app.get('/api/tracks', async (req, res) => {
     try {
+      if (dbPool) {
+        const [rows]: any = await dbPool.query('SELECT * FROM tracks');
+        return res.json(rows);
+      }
       if (fs.existsSync(tracksFile)) {
         const data = fs.readFileSync(tracksFile, 'utf8');
         return res.json(JSON.parse(data));
@@ -192,7 +299,7 @@ async function startServer() {
   });
 
   // POST tracks (Add)
-  app.post('/api/tracks', (req, res) => {
+  app.post('/api/tracks', async (req, res) => {
     try {
       const { title, titleEn, genre, duration, description, year, instrument, audioUrl, coverUrl } = req.body;
 
@@ -225,6 +332,15 @@ async function startServer() {
         instrument: instrument ? instrument.trim() : 'گیتار و سازهای سینث‌سایزر'
       };
 
+      if (dbPool) {
+        await dbPool.query(
+          'INSERT INTO tracks (id, title, titleEn, genre, duration, audioUrl, coverUrl, description, year, instrument) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [newTrack.id, newTrack.title, newTrack.titleEn, newTrack.genre, newTrack.duration, newTrack.audioUrl, newTrack.coverUrl, newTrack.description, newTrack.year, newTrack.instrument]
+        );
+        const [rows]: any = await dbPool.query('SELECT * FROM tracks');
+        return res.json({ success: true, tracks: rows });
+      }
+
       let tracks = [];
       if (fs.existsSync(tracksFile)) {
         tracks = JSON.parse(fs.readFileSync(tracksFile, 'utf8'));
@@ -242,30 +358,56 @@ async function startServer() {
   });
 
   // DELETE tracks
-  app.delete('/api/tracks/:id', (req, res) => {
+  app.delete('/api/tracks/:id', async (req, res) => {
     try {
       const { id } = req.params;
+      let audioUrlToDelete = '';
+      let coverUrlToDelete = '';
+
+      if (dbPool) {
+        const [rows]: any = await dbPool.query('SELECT audioUrl, coverUrl FROM tracks WHERE id = ?', [id]);
+        if (rows.length > 0) {
+          audioUrlToDelete = rows[0].audioUrl;
+          coverUrlToDelete = rows[0].coverUrl;
+        }
+      } else {
+        let tracks = [];
+        if (fs.existsSync(tracksFile)) {
+          tracks = JSON.parse(fs.readFileSync(tracksFile, 'utf8'));
+        } else {
+          tracks = [...DEFAULT_TRACKS];
+        }
+        const trackToDelete = tracks.find((t: any) => t.id === id);
+        if (trackToDelete) {
+          audioUrlToDelete = trackToDelete.audioUrl;
+          coverUrlToDelete = trackToDelete.coverUrl;
+        }
+      }
+
+      if (audioUrlToDelete && audioUrlToDelete.startsWith('/uploads/')) {
+        const audioPath = path.join(process.cwd(), 'public', audioUrlToDelete);
+        if (fs.existsSync(audioPath)) {
+          try { fs.unlinkSync(audioPath); } catch (e) { console.error(e); }
+        }
+      }
+      if (coverUrlToDelete && coverUrlToDelete.startsWith('/uploads/')) {
+        const coverPath = path.join(process.cwd(), 'public', coverUrlToDelete);
+        if (fs.existsSync(coverPath)) {
+          try { fs.unlinkSync(coverPath); } catch (e) { console.error(e); }
+        }
+      }
+
+      if (dbPool) {
+        await dbPool.query('DELETE FROM tracks WHERE id = ?', [id]);
+        const [rows]: any = await dbPool.query('SELECT * FROM tracks');
+        return res.json({ success: true, tracks: rows });
+      }
+
       let tracks = [];
       if (fs.existsSync(tracksFile)) {
         tracks = JSON.parse(fs.readFileSync(tracksFile, 'utf8'));
       } else {
         tracks = [...DEFAULT_TRACKS];
-      }
-
-      const trackToDelete = tracks.find((t: any) => t.id === id);
-      if (trackToDelete) {
-        if (trackToDelete.audioUrl.startsWith('/uploads/')) {
-          const audioPath = path.join(process.cwd(), 'public', trackToDelete.audioUrl);
-          if (fs.existsSync(audioPath)) {
-            try { fs.unlinkSync(audioPath); } catch (e) { console.error(e); }
-          }
-        }
-        if (trackToDelete.coverUrl.startsWith('/uploads/')) {
-          const coverPath = path.join(process.cwd(), 'public', trackToDelete.coverUrl);
-          if (fs.existsSync(coverPath)) {
-            try { fs.unlinkSync(coverPath); } catch (e) { console.error(e); }
-          }
-        }
       }
 
       tracks = tracks.filter((t: any) => t.id !== id);
@@ -278,8 +420,14 @@ async function startServer() {
   });
 
   // GET bio
-  app.get('/api/bio', (req, res) => {
+  app.get('/api/bio', async (req, res) => {
     try {
+      if (dbPool) {
+        const [rows]: any = await dbPool.query('SELECT content FROM bio LIMIT 1');
+        if (rows.length > 0) {
+          return res.json({ bio: rows[0].content });
+        }
+      }
       if (fs.existsSync(bioFile)) {
         const bio = fs.readFileSync(bioFile, 'utf8');
         return res.json({ bio });
@@ -291,12 +439,18 @@ async function startServer() {
   });
 
   // POST bio
-  app.post('/api/bio', (req, res) => {
+  app.post('/api/bio', async (req, res) => {
     try {
       const { bio } = req.body;
       if (typeof bio !== 'string') {
         return res.status(400).json({ error: 'Bio must be a string' });
       }
+
+      if (dbPool) {
+        await dbPool.query('UPDATE bio SET content = ?', [bio]);
+        return res.json({ success: true, bio });
+      }
+
       fs.writeFileSync(bioFile, bio, 'utf8');
       res.json({ success: true, bio });
     } catch (error) {
@@ -305,8 +459,12 @@ async function startServer() {
   });
 
   // GET messages
-  app.get('/api/messages', (req, res) => {
+  app.get('/api/messages', async (req, res) => {
     try {
+      if (dbPool) {
+        const [rows]: any = await dbPool.query('SELECT * FROM messages ORDER BY id DESC');
+        return res.json(rows);
+      }
       if (fs.existsSync(messagesFile)) {
         const data = fs.readFileSync(messagesFile, 'utf8');
         return res.json(JSON.parse(data));
@@ -318,7 +476,7 @@ async function startServer() {
   });
 
   // POST messages (Add)
-  app.post('/api/messages', (req, res) => {
+  app.post('/api/messages', async (req, res) => {
     try {
       const { name, email, subject, message } = req.body;
       if (!name || !email || !message) {
@@ -340,6 +498,15 @@ async function startServer() {
         }).format(new Date())
       };
 
+      if (dbPool) {
+        await dbPool.query(
+          'INSERT INTO messages (id, name, email, subject, message, createdAt) VALUES (?, ?, ?, ?, ?, ?)',
+          [newMessage.id, newMessage.name, newMessage.email, newMessage.subject, newMessage.message, newMessage.createdAt]
+        );
+        const [rows]: any = await dbPool.query('SELECT * FROM messages ORDER BY id DESC');
+        return res.json({ success: true, messages: rows });
+      }
+
       let messages = [];
       if (fs.existsSync(messagesFile)) {
         messages = JSON.parse(fs.readFileSync(messagesFile, 'utf8'));
@@ -356,9 +523,16 @@ async function startServer() {
   });
 
   // DELETE messages
-  app.delete('/api/messages/:id', (req, res) => {
+  app.delete('/api/messages/:id', async (req, res) => {
     try {
       const { id } = req.params;
+
+      if (dbPool) {
+        await dbPool.query('DELETE FROM messages WHERE id = ?', [id]);
+        const [rows]: any = await dbPool.query('SELECT * FROM messages ORDER BY id DESC');
+        return res.json({ success: true, messages: rows });
+      }
+
       let messages = [];
       if (fs.existsSync(messagesFile)) {
         messages = JSON.parse(fs.readFileSync(messagesFile, 'utf8'));
