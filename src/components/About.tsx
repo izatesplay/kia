@@ -73,7 +73,7 @@ export default function About() {
           <div className="grid grid-cols-2 gap-4">
             <div className="relative group rounded-xl overflow-hidden border-2 border-gold-400/20 aspect-[4/5] bg-black shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
               <img 
-                src="/src/assets/images/about_image_1_1783213346583.jpg" 
+                src="/src/assets/images/about_image_1_1783213310316.jpg" 
                 alt="تجهیزات و سازها" 
                 className="w-full h-full object-cover grayscale hover:grayscale-0 contrast-[1.1] transition-all duration-700 hover:scale-105"
                 referrerPolicy="no-referrer"
@@ -84,7 +84,7 @@ export default function About() {
 
             <div className="relative group rounded-xl overflow-hidden border-2 border-gold-400/20 aspect-[4/5] bg-black shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
               <img 
-                src="/src/assets/images/about_image_2_1783213359050.jpg" 
+                src="/src/assets/images/about_image_2_1783213319351.jpg" 
                 alt="کارگاه ضبط آنالوگ" 
                 className="w-full h-full object-cover grayscale hover:grayscale-0 contrast-[1.15] transition-all duration-700 hover:scale-105"
                 referrerPolicy="no-referrer"
