@@ -9,6 +9,7 @@ import Contact from './components/Contact';
 import AdminPanel from './components/AdminPanel';
 import { ContactMessage, Track } from './types';
 import { kianourProfile, tracks as defaultTracks } from './data';
+import { apiFetch } from './apiHelper';
 
 const defaultMessages: ContactMessage[] = [
   {
@@ -46,7 +47,7 @@ export default function App() {
 
   useEffect(() => {
     // 1. Fetch tracks
-    fetch('/api/tracks')
+    apiFetch('/api/tracks')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -56,7 +57,7 @@ export default function App() {
       .catch(err => console.error("Error loading tracks from server:", err));
 
     // 2. Fetch bio
-    fetch('/api/bio')
+    apiFetch('/api/bio')
       .then(res => res.json())
       .then(data => {
         if (data && typeof data.bio === 'string') {
@@ -67,7 +68,7 @@ export default function App() {
       .catch(err => console.error("Error loading bio from server:", err));
 
     // 3. Fetch messages
-    fetch('/api/messages')
+    apiFetch('/api/messages')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -79,7 +80,7 @@ export default function App() {
 
   const handleAddTrack = async (newTrack: Track) => {
     try {
-      const res = await fetch('/api/tracks', {
+      const res = await apiFetch('/api/tracks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -98,7 +99,7 @@ export default function App() {
 
   const handleDeleteTrack = async (id: string) => {
     try {
-      const res = await fetch(`/api/tracks/${id}`, {
+      const res = await apiFetch(`/api/tracks/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();
@@ -122,7 +123,7 @@ export default function App() {
 
   const handleAddMessage = async (newMessage: ContactMessage) => {
     try {
-      const res = await fetch('/api/messages', {
+      const res = await apiFetch('/api/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -146,7 +147,7 @@ export default function App() {
 
   const handleDeleteMessage = async (id: string) => {
     try {
-      const res = await fetch(`/api/messages/${id}`, {
+      const res = await apiFetch(`/api/messages/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();
@@ -163,7 +164,7 @@ export default function App() {
     setBioContent(newBio);
     kianourProfile.bio = newBio;
     try {
-      await fetch('/api/bio', {
+      await apiFetch('/api/bio', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

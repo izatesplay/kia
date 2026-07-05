@@ -188,6 +188,41 @@ switch ($action) {
                 send_error("شناسه قطعه جهت حذف ارسال نشده است.");
             }
 
+            // ابتدا فایل‌های صوتی و کاور مربوطه را پیدا کرده و حذف می‌کنیم
+            $audioUrl = '';
+            $coverUrl = '';
+            $selectStmt = $mysqli->prepare("SELECT audioUrl, coverUrl FROM tracks WHERE id = ?");
+            $selectStmt->bind_param("s", $id);
+            $selectStmt->execute();
+            $selectResult = $selectStmt->get_result();
+            if ($row = $selectResult->fetch_assoc()) {
+                $audioUrl = $row['audioUrl'];
+                $coverUrl = $row['coverUrl'];
+            }
+            $selectStmt->close();
+
+            // حذف فیزیکی فایل صوتی
+            if (!empty($audioUrl)) {
+                $cleanPath = ltrim(str_replace('./', '', $audioUrl), '/');
+                if (strpos($cleanPath, 'uploads/') === 0) {
+                    $physicalPath = __DIR__ . '/' . $cleanPath;
+                    if (file_exists($physicalPath)) {
+                        @unlink($physicalPath);
+                    }
+                }
+            }
+
+            // حذف فیزیکی کاور
+            if (!empty($coverUrl)) {
+                $cleanPath = ltrim(str_replace('./', '', $coverUrl), '/');
+                if (strpos($cleanPath, 'uploads/') === 0) {
+                    $physicalPath = __DIR__ . '/' . $cleanPath;
+                    if (file_exists($physicalPath)) {
+                        @unlink($physicalPath);
+                    }
+                }
+            }
+
             $stmt = $mysqli->prepare("DELETE FROM tracks WHERE id = ?");
             $stmt->bind_param("s", $id);
             
@@ -302,6 +337,48 @@ switch ($action) {
             } else {
                 send_error("خطا در حذف پیام: " . $stmt->error);
             }
+        }
+        break;
+
+    // ز. بارگذاری فایل صوتی یا تصویر روی سرور (Upload)
+    case 'upload':
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['file'])) {
+            $file = $_FILES['file'];
+            
+            // بررسی خطاهای آپلود
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                send_error("خطا در آپلود فایل: " . $file['error']);
+            }
+            
+            // ایجاد پوشه uploads در صورت عدم وجود
+            $uploadsDir = __DIR__ . '/uploads';
+            if (!file_exists($uploadsDir)) {
+                mkdir($uploadsDir, 0755, true);
+            }
+            
+            $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            if (empty($fileExtension)) {
+                // تعیین پسوند بر اساس نوع فایل
+                if (strpos($file['type'], 'audio/') !== false) {
+                    $fileExtension = 'mp3';
+                } else if (strpos($file['type'], 'image/') !== false) {
+                    $fileExtension = 'jpg';
+                } else {
+                    $fileExtension = 'bin';
+                }
+            }
+            
+            $uniqueName = 'file-' . round(microtime(true) * 1000) . '-' . rand(1000, 9999) . '.' . $fileExtension;
+            $destination = $uploadsDir . '/' . $uniqueName;
+            
+            if (move_uploaded_file($file['tmp_name'], $destination)) {
+                $publicUrl = '/uploads/' . $uniqueName; // استفاده از مسیر نسبی با پیشوند اسلش برای سازگاری کامل
+                send_success(["success" => true, "url" => $publicUrl]);
+            } else {
+                send_error("امکان ذخیره فایل در سرور وجود ندارد. دسترسی پوشه uploads را بررسی کنید.");
+            }
+        } else {
+            send_error("فایلی ارسال نشده است یا متد نامعتبر است.", 400);
         }
         break;
 

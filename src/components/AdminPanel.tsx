@@ -6,6 +6,7 @@ import {
   Upload, Music, PlusCircle, Lock, User, AlertCircle
 } from 'lucide-react';
 import { ContactMessage, Track } from '../types';
+import { apiFetch } from '../apiHelper';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -142,7 +143,7 @@ export default function AdminPanel({
       const audioFormData = new FormData();
       audioFormData.append('file', audioFileInput);
       
-      const audioUploadRes = await fetch('/api/upload', {
+      const audioUploadRes = await apiFetch('/api/upload', {
         method: 'POST',
         body: audioFormData
       });
@@ -164,7 +165,7 @@ export default function AdminPanel({
         const coverFormData = new FormData();
         coverFormData.append('file', coverFileInput);
         
-        const coverUploadRes = await fetch('/api/upload', {
+        const coverUploadRes = await apiFetch('/api/upload', {
           method: 'POST',
           body: coverFormData
         });
