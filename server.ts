@@ -284,8 +284,12 @@ async function startServer() {
   app.get('/api/tracks', async (req, res) => {
     try {
       if (dbPool) {
-        const [rows]: any = await dbPool.query('SELECT * FROM tracks');
-        return res.json(rows);
+        try {
+          const [rows]: any = await dbPool.query('SELECT * FROM tracks');
+          return res.json(rows);
+        } catch (dbErr) {
+          console.warn('MySQL GET tracks failed, falling back to local JSON:', dbErr);
+        }
       }
       if (fs.existsSync(tracksFile)) {
         const data = fs.readFileSync(tracksFile, 'utf8');
@@ -333,12 +337,16 @@ async function startServer() {
       };
 
       if (dbPool) {
-        await dbPool.query(
-          'INSERT INTO tracks (id, title, titleEn, genre, duration, audioUrl, coverUrl, description, year, instrument) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [newTrack.id, newTrack.title, newTrack.titleEn, newTrack.genre, newTrack.duration, newTrack.audioUrl, newTrack.coverUrl, newTrack.description, newTrack.year, newTrack.instrument]
-        );
-        const [rows]: any = await dbPool.query('SELECT * FROM tracks');
-        return res.json({ success: true, tracks: rows });
+        try {
+          await dbPool.query(
+            'INSERT INTO tracks (id, title, titleEn, genre, duration, audioUrl, coverUrl, description, year, instrument) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [newTrack.id, newTrack.title, newTrack.titleEn, newTrack.genre, newTrack.duration, newTrack.audioUrl, newTrack.coverUrl, newTrack.description, newTrack.year, newTrack.instrument]
+          );
+          const [rows]: any = await dbPool.query('SELECT * FROM tracks');
+          return res.json({ success: true, tracks: rows });
+        } catch (dbErr) {
+          console.warn('MySQL INSERT track failed, falling back to local JSON:', dbErr);
+        }
       }
 
       let tracks = [];
@@ -365,12 +373,18 @@ async function startServer() {
       let coverUrlToDelete = '';
 
       if (dbPool) {
-        const [rows]: any = await dbPool.query('SELECT audioUrl, coverUrl FROM tracks WHERE id = ?', [id]);
-        if (rows.length > 0) {
-          audioUrlToDelete = rows[0].audioUrl;
-          coverUrlToDelete = rows[0].coverUrl;
+        try {
+          const [rows]: any = await dbPool.query('SELECT audioUrl, coverUrl FROM tracks WHERE id = ?', [id]);
+          if (rows.length > 0) {
+            audioUrlToDelete = rows[0].audioUrl;
+            coverUrlToDelete = rows[0].coverUrl;
+          }
+        } catch (dbErr) {
+          console.warn('MySQL SELECT before delete failed, falling back to local JSON:', dbErr);
         }
-      } else {
+      }
+      
+      if (!audioUrlToDelete && !coverUrlToDelete) {
         let tracks = [];
         if (fs.existsSync(tracksFile)) {
           tracks = JSON.parse(fs.readFileSync(tracksFile, 'utf8'));
@@ -398,9 +412,13 @@ async function startServer() {
       }
 
       if (dbPool) {
-        await dbPool.query('DELETE FROM tracks WHERE id = ?', [id]);
-        const [rows]: any = await dbPool.query('SELECT * FROM tracks');
-        return res.json({ success: true, tracks: rows });
+        try {
+          await dbPool.query('DELETE FROM tracks WHERE id = ?', [id]);
+          const [rows]: any = await dbPool.query('SELECT * FROM tracks');
+          return res.json({ success: true, tracks: rows });
+        } catch (dbErr) {
+          console.warn('MySQL DELETE track failed, falling back to local JSON:', dbErr);
+        }
       }
 
       let tracks = [];
@@ -423,9 +441,13 @@ async function startServer() {
   app.get('/api/bio', async (req, res) => {
     try {
       if (dbPool) {
-        const [rows]: any = await dbPool.query('SELECT content FROM bio LIMIT 1');
-        if (rows.length > 0) {
-          return res.json({ bio: rows[0].content });
+        try {
+          const [rows]: any = await dbPool.query('SELECT content FROM bio LIMIT 1');
+          if (rows.length > 0) {
+            return res.json({ bio: rows[0].content });
+          }
+        } catch (dbErr) {
+          console.warn('MySQL GET bio failed, falling back to local JSON:', dbErr);
         }
       }
       if (fs.existsSync(bioFile)) {
@@ -447,8 +469,12 @@ async function startServer() {
       }
 
       if (dbPool) {
-        await dbPool.query('UPDATE bio SET content = ?', [bio]);
-        return res.json({ success: true, bio });
+        try {
+          await dbPool.query('UPDATE bio SET content = ?', [bio]);
+          return res.json({ success: true, bio });
+        } catch (dbErr) {
+          console.warn('MySQL UPDATE bio failed, falling back to local JSON:', dbErr);
+        }
       }
 
       fs.writeFileSync(bioFile, bio, 'utf8');
@@ -462,8 +488,12 @@ async function startServer() {
   app.get('/api/messages', async (req, res) => {
     try {
       if (dbPool) {
-        const [rows]: any = await dbPool.query('SELECT * FROM messages ORDER BY id DESC');
-        return res.json(rows);
+        try {
+          const [rows]: any = await dbPool.query('SELECT * FROM messages ORDER BY id DESC');
+          return res.json(rows);
+        } catch (dbErr) {
+          console.warn('MySQL GET messages failed, falling back to local JSON:', dbErr);
+        }
       }
       if (fs.existsSync(messagesFile)) {
         const data = fs.readFileSync(messagesFile, 'utf8');
@@ -499,12 +529,16 @@ async function startServer() {
       };
 
       if (dbPool) {
-        await dbPool.query(
-          'INSERT INTO messages (id, name, email, subject, message, createdAt) VALUES (?, ?, ?, ?, ?, ?)',
-          [newMessage.id, newMessage.name, newMessage.email, newMessage.subject, newMessage.message, newMessage.createdAt]
-        );
-        const [rows]: any = await dbPool.query('SELECT * FROM messages ORDER BY id DESC');
-        return res.json({ success: true, messages: rows });
+        try {
+          await dbPool.query(
+            'INSERT INTO messages (id, name, email, subject, message, createdAt) VALUES (?, ?, ?, ?, ?, ?)',
+            [newMessage.id, newMessage.name, newMessage.email, newMessage.subject, newMessage.message, newMessage.createdAt]
+          );
+          const [rows]: any = await dbPool.query('SELECT * FROM messages ORDER BY id DESC');
+          return res.json({ success: true, messages: rows });
+        } catch (dbErr) {
+          console.warn('MySQL INSERT message failed, falling back to local JSON:', dbErr);
+        }
       }
 
       let messages = [];
@@ -528,9 +562,13 @@ async function startServer() {
       const { id } = req.params;
 
       if (dbPool) {
-        await dbPool.query('DELETE FROM messages WHERE id = ?', [id]);
-        const [rows]: any = await dbPool.query('SELECT * FROM messages ORDER BY id DESC');
-        return res.json({ success: true, messages: rows });
+        try {
+          await dbPool.query('DELETE FROM messages WHERE id = ?', [id]);
+          const [rows]: any = await dbPool.query('SELECT * FROM messages ORDER BY id DESC');
+          return res.json({ success: true, messages: rows });
+        } catch (dbErr) {
+          console.warn('MySQL DELETE message failed, falling back to local JSON:', dbErr);
+        }
       }
 
       let messages = [];
