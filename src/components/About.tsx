@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Award, GraduationCap, Calendar, ShieldCheck, Heart, Radio, Disc, Music } from 'lucide-react';
+import { Award, GraduationCap, Calendar, ShieldCheck, Heart, Radio, Disc, Music, Youtube, Instagram, Headphones } from 'lucide-react';
 import { kianourProfile, achievements } from '../data';
 
 export default function About() {
@@ -34,6 +34,72 @@ export default function About() {
             <p className="text-gray-300 font-sans leading-relaxed text-sm">
               به عنوان یک مهندس صدا و صدابردار، معتقدم اصالت صدای آنالوگ - با تمام خش‌خش‌ها و گرماهای دلنشینش - جادویی دارد که هرگز در دنیای سرد دیجیتال تکرار نخواهد شد. به همین دلیل در استودیو شخصی‌ام همواره تلاش می‌کنم این امضا و اصالت صوتی را در آثارم حفظ کنم.
             </p>
+          </div>
+
+          {/* Social Links Panel */}
+          <div className="bg-[#110f0c] border border-gold-400/15 p-6 rounded-2xl relative overflow-hidden box-glow">
+            <div className="absolute top-0 left-0 w-24 h-24 bg-gold-400/5 rounded-full blur-2xl pointer-events-none" />
+            
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="text-right space-y-1">
+                <h4 className="text-md font-sans font-bold text-gold-400 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-pulse" />
+                  <span>درگاه‌های رسمی پخش و شبکه‌های اجتماعی</span>
+                </h4>
+                <p className="text-xs text-gray-400 leading-relaxed font-sans">
+                  برای شنیدن جدیدترین آثار، تماشای اجراهای زنده و دنبال کردن فعالیت‌های هنری من در پلتفرم‌های جهانی همراه باشید.
+                </p>
+              </div>
+              
+              {/* Sleek Buttons Container */}
+              <div className="flex flex-wrap items-center gap-3.5 justify-center md:justify-end" dir="ltr">
+                
+                {/* Spotify */}
+                <a 
+                  href="https://spotify.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/60 border border-gold-400/20 text-gold-300 hover:text-black hover:bg-gold-400 hover:border-gold-400 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] cursor-pointer"
+                >
+                  <Headphones className="w-4 h-4 transition-transform group-hover:rotate-12 duration-300" />
+                  <span className="text-xs font-mono font-bold tracking-wider uppercase">Spotify</span>
+                </a>
+
+                {/* SoundCloud */}
+                <a 
+                  href="https://soundcloud.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/60 border border-gold-400/20 text-gold-300 hover:text-black hover:bg-gold-400 hover:border-gold-400 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] cursor-pointer"
+                >
+                  <Radio className="w-4 h-4 transition-transform group-hover:-rotate-12 duration-300" />
+                  <span className="text-xs font-mono font-bold tracking-wider uppercase">SoundCloud</span>
+                </a>
+
+                {/* YouTube */}
+                <a 
+                  href="https://youtube.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/60 border border-gold-400/20 text-gold-300 hover:text-black hover:bg-gold-400 hover:border-gold-400 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] cursor-pointer"
+                >
+                  <Youtube className="w-4 h-4 transition-transform group-hover:scale-110 duration-300" />
+                  <span className="text-xs font-mono font-bold tracking-wider uppercase">YouTube</span>
+                </a>
+
+                {/* Instagram */}
+                <a 
+                  href="https://instagram.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/60 border border-gold-400/20 text-gold-300 hover:text-black hover:bg-gold-400 hover:border-gold-400 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] cursor-pointer"
+                >
+                  <Instagram className="w-4 h-4 transition-transform group-hover:rotate-12 duration-300" />
+                  <span className="text-xs font-mono font-bold tracking-wider uppercase">Instagram</span>
+                </a>
+
+              </div>
+            </div>
           </div>
 
           {/* Education timeline */}
