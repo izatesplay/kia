@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Music, Calendar, MapPin, Award, ArrowLeft, Disc } from 'lucide-react';
+import { Music, Calendar, MapPin, Award, ArrowLeft, ArrowRight, Disc } from 'lucide-react';
 import { kianourProfile } from '../data';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface HeroProps {
   onNavigateToSection: (section: string) => void;
@@ -10,23 +11,24 @@ interface HeroProps {
 const heroImages = [
   {
     url: './assets/images/hero_image_1_1783213279475.jpg',
-    caption: 'پرتره هنری استودیویی',
-    sub: 'آهنگساز و نوازنده گیتار الکتریک جز'
+    captionKey: 'cap1' as const,
+    subKey: 'sub1' as const
   },
   {
     url: './assets/images/hero_image_2_1783213289225.jpg',
-    caption: 'نمای نزدیک از نوازنده نوستالژیک',
-    sub: 'تهیه‌کننده و مهندس صدای آنالوگ'
+    captionKey: 'cap2' as const,
+    subKey: 'sub2' as const
   },
   {
     url: './assets/images/hero_image_3_1783213299822.jpg',
-    caption: 'استایل خیابانی در فضای باز',
-    sub: 'رهبر ارکستر بزرگ جاز-پاپ تهران'
+    captionKey: 'cap3' as const,
+    subKey: 'sub3' as const
   }
 ];
 
 export default function Hero({ onNavigateToSection }: HeroProps) {
   const [activeImgIndex, setActiveImgIndex] = useState(0);
+  const { language, isRtl, t } = useLanguage();
 
   // Auto-slide every 4.5 seconds
   useEffect(() => {
@@ -35,12 +37,13 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
     }, 4500);
     return () => clearInterval(timer);
   }, []);
+
   return (
-    <section id="home" className="py-12 md:py-20 px-4 md:px-8 max-w-7xl mx-auto" dir="rtl">
+    <section id="home" className="py-12 md:py-20 px-4 md:px-8 max-w-7xl mx-auto" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         
         {/* Biography & Titles Block (7 Cols on large screen) */}
-        <div className="lg:col-span-7 space-y-6 text-right order-2 lg:order-1">
+        <div className={`lg:col-span-7 space-y-6 ${isRtl ? 'text-right' : 'text-left'} order-2 lg:order-1`}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -48,7 +51,7 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             className="inline-flex items-center gap-2 px-3 py-1 bg-gold-400/10 border border-gold-400/30 rounded-full text-gold-400 text-xs font-sans font-medium"
           >
             <span className="w-2 h-2 rounded-full bg-gold-400 animate-ping" />
-            <span>{kianourProfile.experience}</span>
+            <span>{language === 'fa' ? kianourProfile.experience : kianourProfile.experienceEn}</span>
           </motion.div>
 
           <motion.div
@@ -58,10 +61,14 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             className="space-y-2"
           >
             <h2 className="text-4xl md:text-6xl font-display text-white tracking-wide leading-tight">
-              خالق نواهای <span className="text-transparent bg-clip-text bg-gradient-to-l from-gold-500 to-gold-300 gold-glow">ماندگار و نوستالژیک</span>
+              {language === 'fa' ? (
+                <>خالق نواهای <span className="text-transparent bg-clip-text bg-gradient-to-l from-gold-500 to-gold-300 gold-glow">ماندگار و نوستالژیک</span></>
+              ) : (
+                <>Creator of <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-500 to-gold-300 gold-glow">Memorable & Nostalgic</span> Melodies</>
+              )}
             </h2>
             <p className="text-lg text-gold-200/80 font-sans font-medium">
-              {kianourProfile.title}
+              {language === 'fa' ? kianourProfile.title : kianourProfile.titleEn}
             </p>
           </motion.div>
 
@@ -71,7 +78,7 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-gray-400 text-base leading-relaxed max-w-2xl font-light"
           >
-            {kianourProfile.bio}
+            {language === 'fa' ? kianourProfile.bio : kianourProfile.bioEn}
           </motion.p>
 
           <motion.div
@@ -81,9 +88,9 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             className="p-4 bg-[#14120f] border border-gold-400/10 rounded-xl relative overflow-hidden group box-glow"
           >
             <div className="absolute right-0 top-0 w-24 h-24 bg-gold-400/2 rounded-full blur-xl group-hover:bg-gold-400/5 transition-all" />
-            <h4 className="text-gold-400 font-sans font-bold text-sm mb-1">فلسفه هنری من:</h4>
+            <h4 className="text-gold-400 font-sans font-bold text-sm mb-1">{t('heroPhilosophyTitle')}</h4>
             <p className="text-xs text-gray-300 leading-relaxed italic font-light">
-              «{kianourProfile.philosophy}»
+              «{language === 'fa' ? kianourProfile.philosophy : kianourProfile.philosophyEn}»
             </p>
           </motion.div>
 
@@ -99,15 +106,15 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
               className="bg-gradient-to-r from-gold-600 to-gold-400 text-black font-bold font-sans px-8 py-3.5 rounded-lg text-sm border border-gold-300 shadow-[0_5px_15px_rgba(194,135,50,0.25)] hover:shadow-[0_5px_22px_rgba(194,135,50,0.45)] hover:from-gold-500 hover:to-gold-300 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
             >
               <Music className="w-4 h-4 text-black" />
-              <span>شنیدن قطعات موسیقی</span>
+              <span>{t('heroListenBtn')}</span>
             </button>
             
             <button
               onClick={() => onNavigateToSection('about')}
               className="border border-gold-400/40 hover:border-gold-400 text-gold-400 bg-gold-400/5 hover:bg-gold-400/10 font-bold font-sans px-8 py-3.5 rounded-lg text-sm transition-all flex items-center gap-2 cursor-pointer"
             >
-              <span>درباره من و مدارج علمی</span>
-              <ArrowLeft className="w-4 h-4" />
+              <span>{t('heroAboutBtn')}</span>
+              {isRtl ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
             </button>
           </motion.div>
 
@@ -122,9 +129,9 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
               <div className="w-8 h-8 rounded-lg bg-[#14120f] border border-gold-400/20 flex items-center justify-center text-gold-400">
                 <MapPin className="w-4 h-4" />
               </div>
-              <div className="flex flex-col text-right">
-                <span className="text-gray-500 text-[10px]">موقعیت هنری</span>
-                <span className="font-medium text-gray-300">تهران، ایران</span>
+              <div className={`flex flex-col ${isRtl ? 'text-right' : 'text-left'}`}>
+                <span className="text-gray-500 text-[10px]">{t('badgeLocationTitle')}</span>
+                <span className="font-medium text-gray-300">{t('badgeLocationValue')}</span>
               </div>
             </div>
 
@@ -132,9 +139,9 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
               <div className="w-8 h-8 rounded-lg bg-[#14120f] border border-gold-400/20 flex items-center justify-center text-gold-400">
                 <Calendar className="w-4 h-4" />
               </div>
-              <div className="flex flex-col text-right">
-                <span className="text-gray-500 text-[10px]">سابقه آهنگسازی</span>
-                <span className="font-medium text-gray-300">از سال ۱۳۸۲</span>
+              <div className={`flex flex-col ${isRtl ? 'text-right' : 'text-left'}`}>
+                <span className="text-gray-500 text-[10px]">{t('badgeExpTitle')}</span>
+                <span className="font-medium text-gray-300">{t('badgeExpValue')}</span>
               </div>
             </div>
 
@@ -142,9 +149,9 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
               <div className="w-8 h-8 rounded-lg bg-[#14120f] border border-gold-400/20 flex items-center justify-center text-gold-400">
                 <Award className="w-4 h-4" />
               </div>
-              <div className="flex flex-col text-right">
-                <span className="text-gray-500 text-[10px]">مدارک تحصیلی</span>
-                <span className="font-medium text-gray-300">کارشناسی ارشد موسیقی</span>
+              <div className={`flex flex-col ${isRtl ? 'text-right' : 'text-left'}`}>
+                <span className="text-gray-500 text-[10px]">{t('badgeEduTitle')}</span>
+                <span className="font-medium text-gray-300">{t('badgeEduValue')}</span>
               </div>
             </div>
           </motion.div>
@@ -176,7 +183,7 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
                 <motion.img
                   key={activeImgIndex}
                   src={heroImages[activeImgIndex].url}
-                  alt={heroImages[activeImgIndex].caption}
+                  alt={t(heroImages[activeImgIndex].captionKey)}
                   initial={{ opacity: 0, scale: 1.05 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -190,13 +197,13 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30 pointer-events-none z-10" />
               
               {/* Active Image Indicator & Captions Row */}
-              <div className="absolute bottom-4 inset-x-4 bg-[#0a0907]/90 border border-gold-400/20 p-3 rounded-xl text-center backdrop-blur-sm z-20 flex flex-col items-center gap-2" dir="rtl">
+              <div className="absolute bottom-4 inset-x-4 bg-[#0a0907]/90 border border-gold-400/20 p-3 rounded-xl text-center backdrop-blur-sm z-20 flex flex-col items-center gap-2" dir={isRtl ? 'rtl' : 'ltr'}>
                 <div>
                   <h4 className="font-display text-base text-gold-400 tracking-wider font-bold">
-                    {heroImages[activeImgIndex].caption}
+                    {t(heroImages[activeImgIndex].captionKey)}
                   </h4>
                   <p className="text-[10px] text-gray-300 font-sans mt-0.5">
-                    {heroImages[activeImgIndex].sub}
+                    {t(heroImages[activeImgIndex].subKey)}
                   </p>
                 </div>
                 
@@ -209,7 +216,7 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
                       className={`w-1.5 h-1.5 rounded-full cursor-pointer transition-all ${
                         idx === activeImgIndex ? 'bg-gold-400 w-3.5' : 'bg-gray-500/50 hover:bg-gold-400/50'
                       }`}
-                      title={heroImages[idx].caption}
+                      title={t(heroImages[idx].captionKey)}
                     />
                   ))}
                 </div>

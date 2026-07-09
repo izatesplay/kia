@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, SkipForward, SkipBack, Disc, Music, Sliders, Volume2, VolumeX, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Track } from '../types';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface CassettePlayerProps {
   currentTrack: Track;
@@ -20,6 +21,7 @@ export default function CassettePlayer({
   onPrev,
   audioRef
 }: CassettePlayerProps) {
+  const { language, isRtl, t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.8);
@@ -105,7 +107,7 @@ export default function CassettePlayer({
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
           </div>
           <span className="max-w-[180px] truncate text-center font-sans font-medium text-gold-200">
-            {currentTrack.titleEn} ({currentTrack.genre})
+            {language === 'fa' ? currentTrack.title : currentTrack.titleEn} ({currentTrack.genre})
           </span>
           <span>NOISE REDUCTION [ON]</span>
         </div>
@@ -187,12 +189,16 @@ export default function CassettePlayer({
       </div>
 
       {/* Track Details Sub-Display */}
-      <div className="mt-4 bg-[#0a0907] border border-gold-500/20 rounded-lg p-3 flex flex-col sm:flex-row items-center justify-between gap-3 font-sans">
-        <div className="text-right w-full sm:w-auto" dir="rtl">
-          <h3 className="text-gold-400 font-bold text-sm font-sans">{currentTrack.title}</h3>
-          <p className="text-[11px] text-gray-400 mt-0.5">{currentTrack.instrument}</p>
+      <div className="mt-4 bg-[#0a0907] border border-gold-500/20 rounded-lg p-3 flex flex-col sm:flex-row items-center justify-between gap-3 font-sans" dir={isRtl ? 'rtl' : 'ltr'}>
+        <div className={`${isRtl ? 'text-right' : 'text-left'} w-full sm:w-auto`}>
+          <h3 className="text-gold-400 font-bold text-sm font-sans">
+            {language === 'fa' ? currentTrack.title : currentTrack.titleEn}
+          </h3>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            {language === 'fa' ? currentTrack.instrument : (currentTrack.instrumentEn || currentTrack.instrument)}
+          </p>
         </div>
-        <div className="flex items-center gap-4 text-xs font-mono text-gold-300">
+        <div className="flex items-center gap-4 text-xs font-mono text-gold-300" dir="ltr">
           <span className="bg-[#1a1712] px-2 py-1 rounded border border-gold-400/10">
             {formatTime(currentTime)}
           </span>
@@ -204,7 +210,7 @@ export default function CassettePlayer({
       </div>
 
       {/* Progress slider (Seek) */}
-      <div className="mt-4 flex items-center gap-2">
+      <div className="mt-4 flex items-center gap-2" dir="ltr">
         <span className="text-[10px] font-mono text-gold-500">0:00</span>
         <input
           type="range"
@@ -218,7 +224,7 @@ export default function CassettePlayer({
       </div>
 
       {/* VU LED Lights Output */}
-      <div className="mt-4 flex items-center justify-between bg-[#0a0907] border border-gold-500/10 rounded-lg px-3 py-2">
+      <div className="mt-4 flex items-center justify-between bg-[#0a0907] border border-gold-500/10 rounded-lg px-3 py-2" dir="ltr">
         <span className="text-[9px] font-mono text-gold-500/70 tracking-widest uppercase">VU LEVELS</span>
         <div className="flex gap-1.5 h-3 items-end">
           {vuLevels.map((level, i) => {
@@ -242,12 +248,12 @@ export default function CassettePlayer({
       </div>
 
       {/* Player Action Buttons (Tape Deck Controls) */}
-      <div className="mt-5 flex items-center justify-between gap-2 border-t border-gold-400/10 pt-4">
+      <div className="mt-5 flex items-center justify-between gap-2 border-t border-gold-400/10 pt-4" dir="ltr">
         {/* Previous Button */}
         <button
           onClick={onPrev}
           className="p-2.5 rounded-lg border border-gold-500/30 bg-[#1e1a14] text-gold-400 hover:text-gold-300 hover:border-gold-400 hover:bg-[#28231b] active:scale-95 transition-all cursor-pointer"
-          title="ترک قبلی"
+          title={t('prevTrack')}
         >
           <SkipBack className="w-5 h-5" />
         </button>
@@ -256,7 +262,7 @@ export default function CassettePlayer({
         <button
           onClick={onPlayPause}
           className="flex-1 py-2.5 max-w-[200px] rounded-lg border-2 border-gold-400 bg-gold-400 text-black font-sans font-bold flex items-center justify-center gap-2 hover:bg-gold-300 hover:border-gold-300 active:scale-95 transition-all shadow-[0_4px_15px_rgba(194,135,50,0.3)] cursor-pointer"
-          title={isPlaying ? "توقف پخش" : "شروع پخش"}
+          title={isPlaying ? t('pauseTrack') : t('playTrack')}
         >
           {isPlaying ? (
             <>
@@ -275,7 +281,7 @@ export default function CassettePlayer({
         <button
           onClick={onNext}
           className="p-2.5 rounded-lg border border-gold-500/30 bg-[#1e1a14] text-gold-400 hover:text-gold-300 hover:border-gold-400 hover:bg-[#28231b] active:scale-95 transition-all cursor-pointer"
-          title="ترک بعدی"
+          title={t('nextTrack')}
         >
           <SkipForward className="w-5 h-5" />
         </button>

@@ -61,12 +61,19 @@ export const getApiUrl = (endpoint: string): string => {
 export const apiFetch = async (endpoint: string, options?: RequestInit) => {
   const url = getApiUrl(endpoint);
   
-  // Since some cPanel environments might block DELETE requests,
-  // we translate DELETE requests into POST requests or GET queries with action.
-  // Our api.php is designed to support action=delete_track/delete_message via GET/POST/DELETE.
-  // To maximize compatibility, if it is a DELETE request on cPanel, we can modify it
-  // or pass it directly. Since api.php supports both direct DELETE and GET/POST with id, 
-  // it is extremely safe.
+  // Check if we are in production / cPanel environment
+  const isDevOrStudio = 
+    window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1' || 
+    window.location.hostname.includes('run.app');
+
+  let finalOptions = options ? { ...options } : {};
+
+  // If we are in cPanel production and the method is DELETE, convert it to POST
+  // since cPanel firewalls often block DELETE requests but allow POST with URL params
+  if (!isDevOrStudio && finalOptions.method === 'DELETE') {
+    finalOptions.method = 'POST';
+  }
   
-  return fetch(url, options);
+  return fetch(url, finalOptions);
 };

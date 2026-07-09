@@ -10,6 +10,7 @@ import AdminPanel from './components/AdminPanel';
 import { ContactMessage, Track } from './types';
 import { kianourProfile, tracks as defaultTracks } from './data';
 import { apiFetch } from './apiHelper';
+import { useLanguage } from './lib/LanguageContext';
 
 const defaultMessages: ContactMessage[] = [
   {
@@ -31,6 +32,7 @@ const defaultMessages: ContactMessage[] = [
 ];
 
 export default function App() {
+  const { language, isRtl, t } = useLanguage();
   const [activeSection, setActiveSection] = useState<string>('home');
   const [showAdminPanel, setShowAdminPanel] = useState<boolean>(false);
   const [ambientSound, setAmbientSound] = useState<boolean>(true);
@@ -93,7 +95,7 @@ export default function App() {
       }
     } catch (err) {
       console.error("Error adding track to server:", err);
-      alert("خطا در بارگذاری موزیک روی سرور");
+      alert(language === 'fa' ? "خطا در بارگذاری موزیک روی سرور" : "Error uploading music to server");
     }
   };
 
@@ -108,7 +110,7 @@ export default function App() {
       }
     } catch (err) {
       console.error("Error deleting track from server:", err);
-      alert("خطا در حذف موزیک از سرور");
+      alert(language === 'fa' ? "خطا در حذف موزیک از سرور" : "Error deleting music from server");
     }
   };
 
@@ -228,8 +230,8 @@ export default function App() {
       </main>
 
       {/* Retro Footnote / Footer */}
-      <footer className="border-t border-gold-400/10 bg-[#070605] py-10 px-4 mt-12 font-sans" dir="rtl">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-center md:text-right">
+      <footer className="border-t border-gold-400/10 bg-[#070605] py-10 px-4 mt-12 font-sans" dir={isRtl ? "rtl" : "ltr"}>
+        <div className={`max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-center ${isRtl ? 'text-right' : 'text-left'} text-center`}>
           
           {/* Logo & Slogan */}
           <div className="space-y-2 flex flex-col items-center md:items-start">
@@ -239,30 +241,30 @@ export default function App() {
               className="h-12 w-auto object-contain brightness-110 contrast-125 mix-blend-screen"
               referrerPolicy="no-referrer"
             />
-            <p className="text-[11px] text-gray-500">خالق طنین‌های ماندگار جاز، سول و آهنگسازی کاربردی در ایران</p>
+            <p className="text-[11px] text-gray-500">{t('footerDesc')}</p>
           </div>
 
           {/* Copyrights */}
           <div className="text-center text-xs text-gray-500 font-sans space-y-1">
-            <p>© تمام حقوق معنوی و هنری متعلق به استاد کیانور پرتوی می‌باشد.</p>
-            <p className="text-[10px] text-gray-600">وب‌سایت رسمی و هنری کیانور پرتوی - توسعه‌یافته با ری‌اکت و تیلوند</p>
+            <p>{t('footerCopyright')}</p>
+            <p className="text-[10px] text-gray-600">{t('footerSubCopyright')}</p>
           </div>
 
           {/* Social Links & Easter Eggs */}
-          <div className="flex justify-center md:justify-end gap-4 text-xs font-sans">
+          <div className={`flex justify-center md:justify-end gap-4 text-xs font-sans`}>
             <button 
               onClick={() => handleNavigateToSection('contact')}
               className="text-gray-400 hover:text-gold-400 transition-colors cursor-pointer flex items-center gap-1"
             >
               <Mail className="w-4 h-4" />
-              <span>ارسال سفارش پروژه</span>
+              <span>{t('footerOrder')}</span>
             </button>
             <span className="text-gray-700">|</span>
             <button 
               onClick={() => setShowAdminPanel(true)}
               className="text-gold-400 hover:text-gold-300 transition-all font-bold cursor-pointer"
             >
-              پنل مدیریت استاد
+              {t('adminPanelLink')}
             </button>
           </div>
 
@@ -276,7 +278,7 @@ export default function App() {
           animate={{ opacity: 1, scale: 1 }}
           onClick={() => setShowAdminPanel(true)}
           className="fixed bottom-6 left-6 z-40 bg-gradient-to-r from-[#1d2327] to-[#2c3338] hover:from-[#2c3338] hover:to-[#1d2327] text-gold-400 hover:text-gold-300 border border-gold-400/30 w-12 h-12 rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.5)] flex items-center justify-center cursor-pointer transition-all active:scale-95 group"
-          title="ورود به پنل مدیریت"
+          title={t('adminPanelLink')}
         >
           <div className="relative">
             <Disc className="w-5 h-5 text-gold-400 animate-spin-slow group-hover:text-gold-300" />
@@ -294,7 +296,7 @@ export default function App() {
             exit={{ opacity: 0, y: 10 }}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="fixed bottom-6 right-6 z-40 bg-gold-400 text-black w-10 h-10 rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:bg-gold-300 active:scale-95 transition-all"
-            title="بازگشت به ابتدای صفحه"
+            title={language === 'fa' ? 'بازگشت به ابتدای صفحه' : 'Back to Top'}
           >
             <ArrowUp className="w-5 h-5" />
           </motion.button>

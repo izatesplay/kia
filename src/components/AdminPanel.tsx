@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { ContactMessage, Track } from '../types';
 import { apiFetch } from '../apiHelper';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -35,6 +36,8 @@ export default function AdminPanel({
   onAddTrack,
   onDeleteTrack
 }: AdminPanelProps) {
+  const { language, isRtl, t } = useLanguage();
+
   // Tabs: inbox, edit-bio, upload-music, settings
   const [activeTab, setActiveTab] = useState<'inbox' | 'edit-bio' | 'upload-music' | 'settings'>('inbox');
   const [editedBio, setEditedBio] = useState(bioContent);
@@ -82,7 +85,7 @@ export default function AdminPanel({
       sessionStorage.setItem('kianour_admin_auth', 'true');
       setAuthError(null);
     } else {
-      setAuthError('نام کاربری یا رمز عبور اشتباه است.');
+      setAuthError(language === 'fa' ? 'نام کاربری یا رمز عبور اشتباه است.' : 'Incorrect username or password.');
     }
   };
 
@@ -128,11 +131,11 @@ export default function AdminPanel({
     const coverFileInput = coverInputRef.current?.files?.[0];
     
     if (!trackTitle.trim()) {
-      alert('لطفاً عنوان اثر را وارد کنید.');
+      alert(language === 'fa' ? 'لطفاً عنوان اثر را وارد کنید.' : 'Please enter the track title.');
       return;
     }
     if (!audioFileInput) {
-      alert('لطفاً فایل صوتی موزیک را انتخاب کنید.');
+      alert(language === 'fa' ? 'لطفاً فایل صوتی موزیک را انتخاب کنید.' : 'Please select the audio file.');
       return;
     }
 
@@ -182,7 +185,7 @@ export default function AdminPanel({
       const newTrack: Track = {
         id: `custom-${Date.now()}`,
         title: trackTitle.trim(),
-        titleEn: trackTitleEn.trim() || 'Custom Track',
+        titleEn: trackTitleEn.trim() || trackTitle.trim(),
         genre: trackGenre,
         duration: trackDuration,
         audioUrl: finalAudioUrl,
@@ -209,7 +212,10 @@ export default function AdminPanel({
       setTimeout(() => setUploadSuccess(false), 4000);
     } catch (err) {
       console.error(err);
-      alert('خطا در بارگذاری فایل‌های صوتی یا تصویر روی سرور. لطفاً مجدداً تلاش کنید یا فایل کوچک‌تری انتخاب کنید.');
+      alert(language === 'fa' 
+        ? 'خطا در بارگذاری فایل‌های صوتی یا تصویر روی سرور. لطفاً مجدداً تلاش کنید یا فایل کوچک‌تری انتخاب کنید.' 
+        : 'Error uploading audio or image files to server. Please try again or select smaller files.'
+      );
       setIsUploading(false);
     }
   };
@@ -217,7 +223,7 @@ export default function AdminPanel({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden flex justify-end font-sans select-none" dir="rtl">
+    <div className="fixed inset-0 z-50 overflow-hidden flex justify-end font-sans select-none" dir={isRtl ? "rtl" : "ltr"}>
       {/* Dimmed backdrop */}
       <motion.div 
         initial={{ opacity: 0 }}
@@ -229,18 +235,18 @@ export default function AdminPanel({
 
       {/* Slide-out Panel */}
       <motion.div 
-        initial={{ x: '100%' }}
+        initial={{ x: isRtl ? '100%' : '-100%' }}
         animate={{ x: 0 }}
-        exit={{ x: '100%' }}
+        exit={{ x: isRtl ? '100%' : '-100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="relative w-full max-w-2xl h-full bg-[#111111] border-l-2 border-gold-400/30 text-gray-200 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col z-50"
+        className={`relative w-full max-w-2xl h-full bg-[#111111] ${isRtl ? 'border-l-2 border-l-gold-400/30' : 'border-r-2 border-r-gold-400/30'} text-gray-200 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col z-50`}
       >
-        {/* Absolute floating controls (No top bar) */}
-        <div className="absolute top-4 left-4 z-50 flex items-center gap-2" dir="ltr">
+        {/* Absolute floating controls */}
+        <div className={`absolute top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 flex items-center gap-2`} dir={isRtl ? 'ltr' : 'rtl'}>
           <button 
             onClick={onClose}
             className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#2c3338] transition-colors cursor-pointer bg-black/40 border border-[#2c3338] backdrop-blur-sm shadow-md"
-            title="بستن"
+            title={language === 'fa' ? 'بستن' : 'Close'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -249,7 +255,7 @@ export default function AdminPanel({
               onClick={handleLogout}
               className="text-[10px] text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/50 px-2.5 py-1.5 rounded-lg bg-red-500/5 hover:bg-red-500/10 transition-all cursor-pointer font-sans shadow-md"
             >
-              خروج از سیستم
+              {language === 'fa' ? 'خروج از سیستم' : 'Logout'}
             </button>
           )}
         </div>
@@ -266,9 +272,9 @@ export default function AdminPanel({
                 <div className="w-16 h-16 rounded-full bg-gold-400/10 border border-gold-400/30 flex items-center justify-center mx-auto text-gold-400">
                   <Lock className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-bold text-white font-sans">ورود به پنل مدیریت استاد</h3>
+                <h3 className="text-lg font-bold text-white font-sans">{language === 'fa' ? 'ورود به پنل مدیریت استاد' : 'Artist Admin Login'}</h3>
                 <p className="text-xs text-gray-400 leading-relaxed max-w-sm mx-auto">
-                  لطفاً نام کاربری و رمز عبور پیشخوان مدیریت را وارد کنید.
+                  {language === 'fa' ? 'لطفاً نام کاربری و رمز عبور پیشخوان مدیریت را وارد کنید.' : 'Please enter the username and password for the admin dashboard.'}
                 </p>
               </div>
 
@@ -279,11 +285,11 @@ export default function AdminPanel({
                 </div>
               )}
 
-              <form onSubmit={handleLogin} className="space-y-4 text-right">
+              <form onSubmit={handleLogin} className={`space-y-4 ${isRtl ? 'text-right' : 'text-left'}`}>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-400 flex items-center gap-1.5 justify-start">
                     <User className="w-3.5 h-3.5 text-gold-400" />
-                    <span>نام کاربری</span>
+                    <span>{language === 'fa' ? 'نام کاربری' : 'Username'}</span>
                   </label>
                   <input
                     type="text"
@@ -299,7 +305,7 @@ export default function AdminPanel({
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-400 flex items-center gap-1.5 justify-start">
                     <Lock className="w-3.5 h-3.5 text-gold-400" />
-                    <span>رمز عبور</span>
+                    <span>{language === 'fa' ? 'رمز عبور' : 'Password'}</span>
                   </label>
                   <input
                     type="password"
@@ -317,16 +323,24 @@ export default function AdminPanel({
                   className="w-full py-3 bg-gradient-to-r from-gold-600 to-gold-400 text-black font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_4px_15px_rgba(194,135,50,0.2)] active:scale-95 transition-all mt-6"
                 >
                   <Lock className="w-4 h-4" />
-                  <span>تایید و ورود به پیشخوان</span>
+                  <span>{language === 'fa' ? 'تایید و ورود به پیشخوان' : 'Confirm & Login'}</span>
                 </button>
               </form>
 
               {/* Login Hints */}
               <div className="border-t border-gold-400/10 pt-4 text-center">
-                <p className="text-[10px] text-gold-400/40">
-                  راهنمای ورود برای تست دمو: <br />
-                  نام کاربری: <span className="font-mono font-bold text-gold-400/70">kianour</span> و رمز عبور: <span className="font-mono font-bold text-gold-400/70">partovi</span> <br />
-                  یا نام کاربری: <span className="font-mono font-bold text-gold-400/70">admin</span> و رمز عبور: <span className="font-mono font-bold text-gold-400/70">1234</span>
+                <p className="text-[10px] text-gold-400/40 leading-relaxed">
+                  {language === 'fa' ? (
+                    <>
+                      راهنمای ورود برای تست دمو: <br />
+                      نام کاربری: <span className="font-mono font-bold text-gold-400/70">kianour</span> و رمز عبور: <span className="font-mono font-bold text-gold-400/70">partovi</span>
+                    </>
+                  ) : (
+                    <>
+                      Demo Credentials: <br />
+                      Username: <span className="font-mono font-bold text-gold-400/70">kianour</span> / Password: <span className="font-mono font-bold text-gold-400/70">partovi</span>
+                    </>
+                  )}
                 </p>
               </div>
             </motion.div>
@@ -334,7 +348,7 @@ export default function AdminPanel({
         ) : (
           <>
             {/* Tab Navigation */}
-            <div className="bg-[#181818] border-b border-[#2c3338] px-4 pl-36 flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-thin flex-shrink-0">
+            <div className={`bg-[#181818] border-b border-[#2c3338] px-4 ${isRtl ? 'pl-36' : 'pr-36'} flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-thin flex-shrink-0`}>
               <button
                 onClick={() => setActiveTab('inbox')}
                 className={`px-4 py-3 text-xs font-bold border-b-2 flex items-center gap-2 cursor-pointer transition-colors ${
@@ -344,7 +358,7 @@ export default function AdminPanel({
                 }`}
               >
                 <Inbox className="w-4 h-4" />
-                <span>صندوق پیام‌ها ({messages.length})</span>
+                <span>{language === 'fa' ? `صندوق پیام‌ها (${messages.length})` : `Inbox (${messages.length})`}</span>
               </button>
 
               <button
@@ -356,7 +370,7 @@ export default function AdminPanel({
                 }`}
               >
                 <FileText className="w-4 h-4" />
-                <span>ویرایش بیوگرافی</span>
+                <span>{language === 'fa' ? 'ویرایش بیوگرافی' : 'Edit Biography'}</span>
               </button>
 
               <button
@@ -368,7 +382,7 @@ export default function AdminPanel({
                 }`}
               >
                 <Music className="w-4 h-4" />
-                <span>مدیریت موزیک‌ها ({allTracks.length})</span>
+                <span>{language === 'fa' ? `مدیریت موزیک‌ها (${allTracks.length})` : `Tracks (${allTracks.length})`}</span>
               </button>
 
               <button
@@ -380,7 +394,7 @@ export default function AdminPanel({
                 }`}
               >
                 <Settings className="w-4 h-4" />
-                <span>تنظیمات پوسته</span>
+                <span>{language === 'fa' ? 'تنظیمات پوسته' : 'System Settings'}</span>
               </button>
             </div>
 
@@ -398,15 +412,14 @@ export default function AdminPanel({
                     className="space-y-4"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-[#f0f0f1]">صندوق نامه‌های دریافتی همکاری</h3>
-                      <span className="text-[10px] text-gray-500">مجموع دریافتی: {messages.length} پیام</span>
+                      <h3 className="text-sm font-bold text-[#f0f0f1]">{language === 'fa' ? 'صندوق نامه‌های دریافتی همکاری' : 'Project & Collaboration Messages'}</h3>
+                      <span className="text-[10px] text-gray-500">{language === 'fa' ? `مجموع دریافتی: ${messages.length} پیام` : `Total: ${messages.length} messages`}</span>
                     </div>
 
                     {messages.length === 0 ? (
                       <div className="border border-dashed border-[#2c3338] rounded-xl p-10 text-center text-gray-500 space-y-2">
                         <Inbox className="w-10 h-10 text-gray-600 mx-auto" />
-                        <p className="text-xs font-bold">هیچ پیامی در صندوق ورودی یافت نشد.</p>
-                        <p className="text-[10px] text-gray-600">از طریق فرم تماس با من، پیام تستی ارسال کنید تا اینجا ظاهر شود.</p>
+                        <p className="text-xs font-bold">{language === 'fa' ? 'هیچ پیامی در صندوق ورودی یافت نشد.' : 'No messages found in your inbox.'}</p>
                       </div>
                     ) : (
                       <div className="space-y-3.5">
@@ -416,7 +429,7 @@ export default function AdminPanel({
                             className="bg-[#2c3338]/20 border border-[#2c3338] rounded-xl p-4.5 space-y-3 relative hover:border-[#354046] transition-all"
                           >
                             <div className="flex justify-between items-start gap-3">
-                              <div>
+                              <div className={isRtl ? 'text-right' : 'text-left'}>
                                 <h4 className="text-xs font-bold text-white font-sans">{msg.name}</h4>
                                 <span className="text-[10px] text-[#72aee6] font-mono block mt-0.5" dir="ltr">{msg.email}</span>
                               </div>
@@ -426,15 +439,17 @@ export default function AdminPanel({
                                 <button
                                   onClick={() => onDeleteMessage(msg.id)}
                                   className="p-1 rounded text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer"
-                                  title="حذف پیام"
+                                  title={language === 'fa' ? 'حذف پیام' : 'Delete Message'}
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             </div>
 
-                            <div className="bg-[#111111] p-3 rounded-lg border border-[#2c3338]/60 text-right">
-                              <span className="text-[10px] text-gold-400 font-bold block mb-1">موضوع: {msg.subject}</span>
+                            <div className={`bg-[#111111] p-3 rounded-lg border border-[#2c3338]/60 ${isRtl ? 'text-right' : 'text-left'}`}>
+                              <span className="text-[10px] text-gold-400 font-bold block mb-1">
+                                {language === 'fa' ? `موضوع: ${msg.subject}` : `Subject: ${msg.subject}`}
+                              </span>
                               <p className="text-xs text-gray-300 leading-relaxed font-sans">{msg.message}</p>
                             </div>
                           </div>
@@ -454,13 +469,15 @@ export default function AdminPanel({
                     className="space-y-4"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-[#f0f0f1]">ویرایش بیوگرافی استاد کیانور پرتوی</h3>
-                      <span className="text-[10px] text-gray-500">ذخیره خودکار در مرورگر</span>
+                      <h3 className="text-sm font-bold text-[#f0f0f1]">{language === 'fa' ? 'ویرایش بیوگرافی استاد کیانور پرتوی' : 'Edit Biography Text'}</h3>
+                      <span className="text-[10px] text-gray-500">{language === 'fa' ? 'ذخیره در سرور' : 'Sync with Server'}</span>
                     </div>
 
-                    <div className="space-y-4 font-sans text-right">
+                    <div className={`space-y-4 font-sans ${isRtl ? 'text-right' : 'text-left'}`}>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-gray-400">متن اصلی زندگی‌نامه و دستاوردها</label>
+                        <label className="text-xs font-bold text-gray-400">
+                          {language === 'fa' ? 'متن اصلی زندگی‌نامه و دستاوردها' : 'Main Artist Biography / Profile info'}
+                        </label>
                         <textarea
                           rows={8}
                           value={editedBio}
@@ -472,7 +489,7 @@ export default function AdminPanel({
                       {isSaved && (
                         <div className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2 justify-start font-sans">
                           <Check className="w-4 h-4 text-emerald-400" />
-                          <span>تغییرات بیوگرافی با موفقیت ذخیره و در صفحه اصلی اعمال شد!</span>
+                          <span>{language === 'fa' ? 'تغییرات بیوگرافی با موفقیت ذخیره و در صفحه اصلی اعمال شد!' : 'Biography updated and synced with server successfully!'}</span>
                         </div>
                       )}
 
@@ -481,7 +498,7 @@ export default function AdminPanel({
                         className="w-full py-3 bg-gold-500 hover:bg-gold-400 text-black font-bold text-xs rounded-lg flex items-center justify-center gap-2 shadow cursor-pointer transition-colors"
                       >
                         <Save className="w-4 h-4 text-black" />
-                        <span>بروزرسانی نهایی محتوا</span>
+                        <span>{language === 'fa' ? 'بروزرسانی نهایی محتوا' : 'Update Content Permanently'}</span>
                       </button>
                     </div>
                   </motion.div>
@@ -497,32 +514,32 @@ export default function AdminPanel({
                     className="space-y-6"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-[#f0f0f1]">مدیریت و آپلود موسیقی‌های من</h3>
-                      <span className="text-[10px] text-gray-500">مجموع قطعات قابل پخش: {allTracks.length} اثر</span>
+                      <h3 className="text-sm font-bold text-[#f0f0f1]">{language === 'fa' ? 'مدیریت و آپلود موسیقی‌های من' : 'Track List & Music Uploads'}</h3>
+                      <span className="text-[10px] text-gray-500">{language === 'fa' ? `مجموع قطعات قابل پخش: ${allTracks.length} اثر` : `Total tracks available: ${allTracks.length}`}</span>
                     </div>
 
                     {/* Form Block */}
-                    <form onSubmit={handleTrackUpload} className="bg-[#181818] border border-gold-400/10 rounded-2xl p-5 space-y-4 text-right font-sans">
+                    <form onSubmit={handleTrackUpload} className={`bg-[#181818] border border-gold-400/10 rounded-2xl p-5 space-y-4 ${isRtl ? 'text-right' : 'text-left'} font-sans`}>
                       <div className="flex items-center gap-2 pb-2 border-b border-gold-400/10">
                         <PlusCircle className="w-4 h-4 text-gold-400" />
-                        <span className="text-xs font-bold text-white">آپلود قطعه صوتی جدید</span>
+                        <span className="text-xs font-bold text-white">{language === 'fa' ? 'آپلود قطعه صوتی جدید' : 'Upload New Audio Track'}</span>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-bold text-gray-400">عنوان قطعه موسیقی (فارسی)</label>
+                          <label className="text-[11px] font-bold text-gray-400">{language === 'fa' ? 'عنوان قطعه موسیقی (فارسی)' : 'Track Title (Persian)'}</label>
                           <input
                             type="text"
                             required
                             value={trackTitle}
                             onChange={(e) => setTrackTitle(e.target.value)}
-                            placeholder="مانند: باران پاییزی"
+                            placeholder={language === 'fa' ? 'مانند: باران پاییزی' : 'e.g. Baran-e Paeizi'}
                             className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-2.5 text-xs text-gray-200 focus:outline-none focus:border-gold-400 font-sans"
                           />
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-bold text-gray-400">عنوان انگلیسی (English Title)</label>
+                          <label className="text-[11px] font-bold text-gray-400">{language === 'fa' ? 'عنوان انگلیسی (English Title)' : 'Track Title (English)'}</label>
                           <input
                             type="text"
                             value={trackTitleEn}
@@ -534,7 +551,7 @@ export default function AdminPanel({
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-bold text-gray-400">ژانر / سبک</label>
+                          <label className="text-[11px] font-bold text-gray-400">{language === 'fa' ? 'ژانر / سبک' : 'Genre / Style'}</label>
                           <select
                             value={trackGenre}
                             onChange={(e) => setTrackGenre(e.target.value)}
@@ -549,34 +566,34 @@ export default function AdminPanel({
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-bold text-gray-400">سال تولید</label>
+                          <label className="text-[11px] font-bold text-gray-400">{language === 'fa' ? 'سال تولید' : 'Release Year'}</label>
                           <input
                             type="text"
                             value={trackYear}
                             onChange={(e) => setTrackYear(e.target.value)}
-                            placeholder="مثلا: ۱۴۰۳"
+                            placeholder="e.g. 2024"
                             className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-2.5 text-xs text-gray-200 focus:outline-none focus:border-gold-400 font-sans"
                           />
                         </div>
 
                         <div className="space-y-1.5 md:col-span-2">
-                          <label className="text-[11px] font-bold text-gray-400">سازهای محوری و نوازندگان</label>
+                          <label className="text-[11px] font-bold text-gray-400">{language === 'fa' ? 'سازهای محوری' : 'Featured Instruments'}</label>
                           <input
                             type="text"
                             value={trackInstrument}
                             onChange={(e) => setTrackInstrument(e.target.value)}
-                            placeholder="مثلا: گیتار الکتریک جاز لید، ارکستر زهی و آکوردیون"
+                            placeholder={language === 'fa' ? 'مثلا: گیتار الکتریک جاز لید، ارکستر زهی' : 'e.g. Electric Jazz Guitar, Rhodes Piano'}
                             className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-2.5 text-xs text-gray-200 focus:outline-none focus:border-gold-400 font-sans"
                           />
                         </div>
 
                         <div className="space-y-1.5 md:col-span-2">
-                          <label className="text-[11px] font-bold text-gray-400">توضیحات کوتاه اثر</label>
+                          <label className="text-[11px] font-bold text-gray-400">{language === 'fa' ? 'توضیحات کوتاه اثر' : 'Brief Description'}</label>
                           <textarea
                             rows={2}
                             value={trackDescription}
                             onChange={(e) => setTrackDescription(e.target.value)}
-                            placeholder="توضیحاتی پیرامون حس و حال اثر و الهام صوتی..."
+                            placeholder={language === 'fa' ? 'توضیحاتی پیرامون حس و حال اثر...' : 'Atmospheric vibes & inspirations behind the piece...'}
                             className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-2.5 text-xs text-gray-200 focus:outline-none focus:border-gold-400 font-sans resize-none"
                           />
                         </div>
@@ -584,7 +601,7 @@ export default function AdminPanel({
                         <div className="space-y-1.5">
                           <label className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
                             <Music className="w-3.5 h-3.5 text-gold-400" />
-                            <span>انتخاب فایل موسیقی (صوتی MP3/WAV)*</span>
+                            <span>{language === 'fa' ? 'انتخاب فایل موسیقی (صوتی MP3/WAV)*' : 'Select Audio File (MP3/WAV)*'}</span>
                           </label>
                           <input
                             type="file"
@@ -599,7 +616,7 @@ export default function AdminPanel({
                         <div className="space-y-1.5">
                           <label className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
                             <Upload className="w-3.5 h-3.5 text-gold-400" />
-                            <span>تصویر کاور آلبوم (اختیاری)</span>
+                            <span>{language === 'fa' ? 'تصویر کاور آلبوم (اختیاری)' : 'Album Artwork (Optional)'}</span>
                           </label>
                           <input
                             type="file"
@@ -614,7 +631,7 @@ export default function AdminPanel({
                       {uploadSuccess && (
                         <div className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2 justify-start font-sans">
                           <Check className="w-4 h-4 text-emerald-400" />
-                          <span>قطعه موسیقی با موفقیت بارگذاری، ذخیره و در بخش «آثار من» آماده پخش است!</span>
+                          <span>{language === 'fa' ? 'قطعه موسیقی با موفقیت بارگذاری، ذخیره و در بخش «آثار من» آماده پخش است!' : 'Track uploaded successfully! Ready to play on the main player.'}</span>
                         </div>
                       )}
 
@@ -626,24 +643,26 @@ export default function AdminPanel({
                         {isUploading ? (
                           <>
                             <RefreshCw className="w-4 h-4 animate-spin text-black" />
-                            <span>در حال ذخیره‌سازی صوتی در بانک مرورگر...</span>
+                            <span>{language === 'fa' ? 'در حال ذخیره‌سازی صوتی روی سرور...' : 'Uploading audio file to server...'}</span>
                           </>
                         ) : (
                           <>
                             <Upload className="w-4 h-4 text-black" />
-                            <span>آپلود و ذخیره نهایی قطعه صوتی</span>
+                            <span>{language === 'fa' ? 'آپلود و ذخیره نهایی قطعه صوتی' : 'Upload & Save Audio Track'}</span>
                           </>
                         )}
                       </button>
                     </form>
 
                     {/* Uploaded List Block */}
-                    <div className="space-y-3 font-sans text-right">
-                      <span className="text-xs font-bold text-gray-400 block">لیست تمام آثار موسیقی (پیش‌فرض و سفارشی):</span>
+                    <div className={`space-y-3 font-sans ${isRtl ? 'text-right' : 'text-left'}`}>
+                      <span className="text-xs font-bold text-gray-400 block">
+                        {language === 'fa' ? 'لیست تمام آثار موسیقی (پیش‌فرض و سفارشی):' : 'All Tracks (Default & User Uploaded):'}
+                      </span>
                       
                       {allTracks.length === 0 ? (
                         <div className="border border-dashed border-[#2c3338] rounded-xl p-6 text-center text-gray-500 text-xs">
-                          هیچ قطعه موسیقی در حال حاضر وجود ندارد. با استفاده از فرم بالا می‌توانید اثر جدیدی اضافه کنید.
+                          {language === 'fa' ? 'هیچ قطعه موسیقی یافت نشد.' : 'No tracks found.'}
                         </div>
                       ) : (
                         <div className="space-y-2">
@@ -663,13 +682,17 @@ export default function AdminPanel({
                                       referrerPolicy="no-referrer"
                                     />
                                   </div>
-                                  <div className="text-right">
+                                  <div className={isRtl ? 'text-right' : 'text-left'}>
                                     <div className="flex items-center gap-2">
-                                      <h4 className="text-xs font-bold text-white">{track.title}</h4>
+                                      <h4 className="text-xs font-bold text-white">{language === 'fa' ? track.title : (track.titleEn || track.title)}</h4>
                                       {isDefault ? (
-                                        <span className="text-[8px] bg-blue-500/10 text-blue-300 border border-blue-500/20 px-1 py-0.2 rounded">پیش‌فرض</span>
+                                        <span className="text-[8px] bg-blue-500/10 text-blue-300 border border-blue-500/20 px-1 py-0.2 rounded">
+                                          {language === 'fa' ? 'پیش‌فرض' : 'Default'}
+                                        </span>
                                       ) : (
-                                        <span className="text-[8px] bg-gold-400/10 text-gold-300 border border-gold-400/20 px-1 py-0.2 rounded">کاربر</span>
+                                        <span className="text-[8px] bg-gold-400/10 text-gold-300 border border-gold-400/20 px-1 py-0.2 rounded">
+                                          {language === 'fa' ? 'سفارشی' : 'Custom'}
+                                        </span>
                                       )}
                                     </div>
                                     <div className="flex items-center gap-1.5 mt-1">
@@ -684,7 +707,7 @@ export default function AdminPanel({
                                   <button
                                     onClick={() => onDeleteTrack(track.id)}
                                     className="p-1.5 rounded text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer"
-                                    title="حذف موسیقی"
+                                    title={language === 'fa' ? 'حذف موسیقی' : 'Delete Track'}
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
@@ -708,17 +731,19 @@ export default function AdminPanel({
                     className="space-y-5"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-[#f0f0f1]">تنظیمات عمومی سایت</h3>
-                      <span className="text-[10px] text-gray-500">ویژگی‌های تعاملی پورتفولیو</span>
+                      <h3 className="text-sm font-bold text-[#f0f0f1]">{language === 'fa' ? 'تنظیمات عمومی سایت' : 'Portfolio General Settings'}</h3>
+                      <span className="text-[10px] text-gray-500">{language === 'fa' ? 'ویژگی‌های تعاملی پورتفولیو' : 'Interactive Details'}</span>
                     </div>
 
                     <div className="space-y-4 font-sans">
                       
                       {/* Gramophone option */}
                       <div className="bg-[#2c3338]/20 border border-[#2c3338] rounded-xl p-4.5 flex items-center justify-between gap-4">
-                        <div className="text-right">
-                          <span className="text-xs font-bold text-white block">شبیه‌ساز افکت آنالوگ (Gramophone Noise)</span>
-                          <span className="text-[10px] text-gray-400 block mt-0.5">افزودن صدای ملایم خش‌خش گرامافون قدیمی در زمان پخش موسیقی.</span>
+                        <div className={isRtl ? 'text-right' : 'text-left'}>
+                          <span className="text-xs font-bold text-white block">{language === 'fa' ? 'شبیه‌ساز افکت آنالوگ (Gramophone Noise)' : 'Analog Noise Simulation (Vintage Gramophone)'}</span>
+                          <span className="text-[10px] text-gray-400 block mt-0.5">
+                            {language === 'fa' ? 'افزودن صدای ملایم خش‌خش گرامافون قدیمی در زمان پخش موسیقی.' : 'Inject vintage warm crackle vinyl noise in the background during playback.'}
+                          </span>
                         </div>
                         <button
                           onClick={() => setAmbientSound(!ambientSound)}
@@ -727,16 +752,19 @@ export default function AdminPanel({
                           }`}
                         >
                           <div className={`w-4 h-4 rounded-full bg-black transition-all ${
-                            ambientSound ? '-translate-x-6' : 'translate-x-0'
+                            ambientSound ? (isRtl ? '-translate-x-6' : 'translate-x-6') : 'translate-x-0'
                           }`} />
                         </button>
                       </div>
 
                       {/* Tech layout credits */}
-                      <div className="bg-[#2c3338]/20 border border-[#2c3338] rounded-xl p-4.5 space-y-3 text-right">
-                        <span className="text-xs font-bold text-white block">محیط یکپارچه و بهینه‌سازی</span>
+                      <div className={`bg-[#2c3338]/20 border border-[#2c3338] rounded-xl p-4.5 space-y-3 ${isRtl ? 'text-right' : 'text-left'}`}>
+                        <span className="text-xs font-bold text-white block">{language === 'fa' ? 'محیط یکپارچه و بهینه‌سازی' : 'Hardware Acceleration & Frame Rate'}</span>
                         <p className="text-[10px] text-gray-400 leading-relaxed">
-                          این وب‌سایت کاملاً واکنش‌گرا و بهینه‌سازی شده بر بستر سرورهای ابری است. المان‌های طراحی شده نظیر نوار کاست و صفحه‌گرامافون به صورت لحظه‌ای با نرخ نوسازی ۶۰ فریم بر ثانیه برای تجربه کاربری غنی رندر می‌شوند.
+                          {language === 'fa' 
+                            ? 'این وب‌سایت کاملاً واکنش‌گرا و بهینه‌سازی شده بر بستر سرورهای ابری است. المان‌های طراحی شده نظیر نوار کاست و صفحه‌گرامافون به صورت لحظه‌ای با نرخ نوسازی ۶۰ فریم بر ثانیه برای تجربه کاربری غنی رندر می‌شوند.'
+                            : 'This digital portfolio uses CSS GPU hardware-accelerated animations for smooth transitions. The cassette deck is rendered at 60 FPS in real-time to preserve the organic analog look.'
+                          }
                         </p>
                       </div>
 
@@ -745,12 +773,12 @@ export default function AdminPanel({
                         onClick={() => {
                           setEditedBio(bioContent);
                           setAmbientSound(true);
-                          alert('تمامی تنظیمات و محتوا به حالت اولیه بازگردانی شد.');
+                          alert(language === 'fa' ? 'تمامی تنظیمات و محتوا به حالت اولیه بازگردانی شد.' : 'All system options and parameters reset to default values.');
                         }}
                         className="w-full py-2.5 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white border border-[#2c3338] rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
-                        <span>بازنشانی پیش‌فرض‌های سیستم</span>
+                        <span>{language === 'fa' ? 'بازنشانی پیش‌فرض‌های سیستم' : 'Reset System Defaults'}</span>
                       </button>
                     </div>
                   </motion.div>
@@ -760,11 +788,11 @@ export default function AdminPanel({
             </div>
 
             {/* Panel Footer */}
-            <div className="bg-[#181818] border-t border-[#2c3338] px-6 py-4.5 flex items-center justify-between text-[11px] text-[#a7aaad] font-sans">
-              <span>نسخه سامانه مدیریت: ۱.۴.۰ - طنین طلایی</span>
+            <div className={`bg-[#181818] border-t border-[#2c3338] px-6 py-4.5 flex items-center justify-between text-[11px] text-[#a7aaad] font-sans`}>
+              <span>{language === 'fa' ? 'نسخه سامانه مدیریت: ۱.۴.۰ - طنین طلایی' : 'Admin Panel version: 1.4.0'}</span>
               <div className="flex items-center gap-1 text-gold-400">
                 <Star className="w-3 h-3 fill-gold-400" />
-                <span>طراحی پورتفولیو خلاقانه</span>
+                <span>{language === 'fa' ? 'طراحی پورتفولیو خلاقانه' : 'Creative Artist Portfolio'}</span>
               </div>
             </div>
           </>

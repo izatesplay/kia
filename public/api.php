@@ -9,6 +9,13 @@
  * ۴. مطمئن شوید که دسترسی‌های فایل (File Permissions) روی 644 تنظیم شده باشد.
  */
 
+// افزایش زمان اجرا و حجم آپلود فایل به صورت داینامیک در مفسر پی‌اچ‌پی
+@ini_set('upload_max_filesize', '128M');
+@ini_set('post_max_size', '128M');
+@ini_set('memory_limit', '256M');
+@ini_set('max_execution_time', '300');
+@ini_set('max_input_time', '300');
+
 // --- ۱. تنظیم هدرهای CORS و فرمت خروجی ---
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
@@ -176,7 +183,7 @@ switch ($action) {
 
     // ج. حذف قطعه موسیقی بر اساس ID
     case 'delete_track':
-        if ($_SERVER['REQUEST_METHOD'] == 'DELETE' || isset($_GET['id'])) {
+        if ($_SERVER['REQUEST_METHOD'] == 'DELETE' || $_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'GET' || isset($_GET['id'])) {
             $id = isset($_GET['id']) ? $_GET['id'] : '';
             if (empty($id)) {
                 // تلاش برای خواندن بدنه جیسون
@@ -236,8 +243,10 @@ switch ($action) {
                 }
                 send_success(["success" => true, "tracks" => $tracks]);
             } else {
-                send_error("خطا در حذف موزیک: " . $stmt->error);
+                send_error("خطا در حذف موزیک از دیتابیس: " . $stmt->error);
             }
+        } else {
+            send_error("متد درخواست نامعتبر است.", 405);
         }
         break;
 
@@ -311,7 +320,7 @@ switch ($action) {
 
     // و. حذف پیام تماس بر اساس ID
     case 'delete_message':
-        if ($_SERVER['REQUEST_METHOD'] == 'DELETE' || isset($_GET['id'])) {
+        if ($_SERVER['REQUEST_METHOD'] == 'DELETE' || $_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'GET' || isset($_GET['id'])) {
             $id = isset($_GET['id']) ? $_GET['id'] : '';
             if (empty($id)) {
                 $input = json_decode(file_get_contents("php://input"), true);
@@ -337,48 +346,120 @@ switch ($action) {
             } else {
                 send_error("خطا در حذف پیام: " . $stmt->error);
             }
+        } else {
+            send_error("متد درخواست نامعتبر است.", 405);
         }
         break;
 
     // ز. بارگذاری فایل صوتی یا تصویر روی سرور (Upload)
     case 'upload':
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['file'])) {
-            $file = $_FILES['file'];
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
-            // بررسی خطاهای آپلود
-            if ($file['error'] !== UPLOAD_ERR_OK) {
-                send_error("خطا در آپلود فایل: " . $file['error']);
-            }
-            
-            // ایجاد پوشه uploads در صورت عدم وجود
-            $uploadsDir = __DIR__ . '/uploads';
-            if (!file_exists($uploadsDir)) {
-                mkdir($uploadsDir, 0755, true);
-            }
-            
-            $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
-            if (empty($fileExtension)) {
-                // تعیین پسوند بر اساس نوع فایل
-                if (strpos($file['type'], 'audio/') !== false) {
-                    $fileExtension = 'mp3';
-                } else if (strpos($file['type'], 'image/') !== false) {
-                    $fileExtension = 'jpg';
+            // در صورتی که فایل ارسال شده باشد (آپلود استاندارد چندبخشی)
+            if (isset($_FILES['file'])) {
+                $file = $_FILES['file'];
+                
+                // بررسی کدهای خطای آپلود پی‌اچ‌پی با ترجمه روان و راهنمای حل مشکل
+                if ($file['error'] !== UPLOAD_ERR_OK) {
+                    switch ($file['error']) {
+                        case UPLOAD_ERR_INI_SIZE:
+                            send_error("اندازه فایل صوتی از سقف مجاز سرور بزرگتر است. لطفاً فایل کوچکتری انتخاب کنید یا محدودیت php.ini هاست خود را افزایش دهید.", 413);
+                            break;
+                        case UPLOAD_ERR_FORM_SIZE:
+                            send_error("اندازه فایل صوتی ارسالی بیش از حد مجاز تعریف شده در فرم وب‌سایت است.", 413);
+                            break;
+                        case UPLOAD_ERR_PARTIAL:
+                            send_error("بارگذاری فایل به صورت ناقص انجام شد. لطفاً اتصال اینترنت خود را بررسی و مجدداً تلاش کنید.", 400);
+                            break;
+                        case UPLOAD_ERR_NO_FILE:
+                            send_error("هیچ فایلی برای بارگذاری یافت نشد.", 400);
+                            break;
+                        case UPLOAD_ERR_NO_TMP_DIR:
+                            send_error("پوشه موقت آپلود در سرور یافت نشد. لطفاً با پشتیبانی هاست خود تماس بگیرید.", 500);
+                            break;
+                        case UPLOAD_ERR_CANT_WRITE:
+                            send_error("خطا در نوشتن فایل روی دیسک سرور. ممکن است فضای هاست شما پر شده باشد.", 500);
+                            break;
+                        default:
+                            send_error("خطای ناشناخته در آپلود فایل صوتی روی سرور هاست (کد: " . $file['error'] . ")", 500);
+                            break;
+                    }
+                }
+                
+                // ایجاد پوشه uploads با بالاترین سطح دسترسی نوشتن و خواندن
+                $uploadsDir = __DIR__ . '/uploads';
+                if (!file_exists($uploadsDir)) {
+                    @mkdir($uploadsDir, 0777, true);
+                    @chmod($uploadsDir, 0777);
+                }
+                
+                $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                if (empty($fileExtension)) {
+                    if (strpos($file['type'], 'audio/') !== false) {
+                        $fileExtension = 'mp3';
+                    } else if (strpos($file['type'], 'image/') !== false) {
+                        $fileExtension = 'jpg';
+                    } else {
+                        $fileExtension = 'bin';
+                    }
+                }
+                
+                $uniqueName = 'file-' . round(microtime(true) * 1000) . '-' . rand(1000, 9999) . '.' . $fileExtension;
+                $destination = $uploadsDir . '/' . $uniqueName;
+                
+                if (move_uploaded_file($file['tmp_name'], $destination)) {
+                    @chmod($destination, 0644); // سطح دسترسی عمومی برای خواندن فایل
+                    $publicUrl = '/uploads/' . $uniqueName;
+                    send_success(["success" => true, "url" => $publicUrl]);
                 } else {
-                    $fileExtension = 'bin';
+                    send_error("امکان ذخیره نهایی فایل در سرور وجود ندارد. دسترسی دسترسی پوشه uploads روی هاست را بررسی کنید (باید روی 755 یا 777 باشد).", 500);
+                }
+            } 
+            
+            // در غیر این صورت، شاید فایل به صورت رشته Base64 در بدنه جیسون ارسال شده باشد (آپلود کمکی)
+            else {
+                $input = json_decode(file_get_contents("php://input"), true);
+                if (isset($input['fileBase64']) && isset($input['fileName'])) {
+                    $base64Data = $input['fileBase64'];
+                    $fileName = $input['fileName'];
+                    
+                    // بررسی و پاکسازی تگ پیشوند Base64
+                    if (preg_match('/^data:([^;]+);base64,(.+)$/', $base64Data, $matches)) {
+                        $base64Data = $matches[2];
+                    }
+                    
+                    $decodedData = base64_decode($base64Data);
+                    if ($decodedData === false) {
+                        send_error("کدگذاری Base64 فایل ارسالی نامعتبر است.", 400);
+                    }
+                    
+                    $uploadsDir = __DIR__ . '/uploads';
+                    if (!file_exists($uploadsDir)) {
+                        @mkdir($uploadsDir, 0777, true);
+                        @chmod($uploadsDir, 0777);
+                    }
+                    
+                    $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                    if (empty($fileExtension)) {
+                        $fileExtension = 'mp3';
+                    }
+                    
+                    $uniqueName = 'file-' . round(microtime(true) * 1000) . '-' . rand(1000, 9999) . '.' . $fileExtension;
+                    $destination = $uploadsDir . '/' . $uniqueName;
+                    
+                    if (file_put_contents($destination, $decodedData) !== false) {
+                        @chmod($destination, 0644);
+                        $publicUrl = '/uploads/' . $uniqueName;
+                        send_success(["success" => true, "url" => $publicUrl]);
+                    } else {
+                        send_error("خطا در نوشتن فایل دکود شده روی دیسک سرور.", 500);
+                    }
+                } else {
+                    send_error("هیچ فایلی (چندبخشی یا Base64) برای ذخیره‌سازی یافت نشد.", 400);
                 }
             }
-            
-            $uniqueName = 'file-' . round(microtime(true) * 1000) . '-' . rand(1000, 9999) . '.' . $fileExtension;
-            $destination = $uploadsDir . '/' . $uniqueName;
-            
-            if (move_uploaded_file($file['tmp_name'], $destination)) {
-                $publicUrl = '/uploads/' . $uniqueName; // استفاده از مسیر نسبی با پیشوند اسلش برای سازگاری کامل
-                send_success(["success" => true, "url" => $publicUrl]);
-            } else {
-                send_error("امکان ذخیره فایل در سرور وجود ندارد. دسترسی پوشه uploads را بررسی کنید.");
-            }
         } else {
-            send_error("فایلی ارسال نشده است یا متد نامعتبر است.", 400);
+            send_error("متد درخواست نامعتبر است (باید POST باشد).", 405);
         }
         break;
 

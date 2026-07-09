@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Send, CheckCircle, MapPin, Phone, MessageSquare, Shield } from 'lucide-react';
 import { ContactMessage } from '../types';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface ContactProps {
   onAddMessage: (msg: ContactMessage) => void;
 }
 
 export default function Contact({ onAddMessage }: ContactProps) {
+  const { language, isRtl, t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -29,12 +31,12 @@ export default function Contact({ onAddMessage }: ContactProps) {
         id: Math.random().toString(36).substring(2, 9),
         name: formData.name,
         email: formData.email,
-        subject: formData.subject || 'همکاری عمومی',
+        subject: formData.subject || (language === 'fa' ? 'همکاری عمومی' : 'General Collaboration'),
         message: formData.message,
-        createdAt: new Date().toLocaleDateString('fa-IR') + ' ' + new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
+        createdAt: new Date().toLocaleDateString(language === 'fa' ? 'fa-IR' : 'en-US') + ' ' + new Date().toLocaleTimeString(language === 'fa' ? 'fa-IR' : 'en-US', { hour: '2-digit', minute: '2-digit' })
       };
 
-      // Add to shared inbox state (which saves to localStorage)
+      // Add to shared inbox state
       onAddMessage(newMessage);
 
       setIsSubmitting(false);
@@ -50,26 +52,26 @@ export default function Contact({ onAddMessage }: ContactProps) {
   };
 
   return (
-    <section id="contact" className="py-12 md:py-20 px-4 md:px-8 max-w-7xl mx-auto" dir="rtl">
+    <section id="contact" className="py-12 md:py-20 px-4 md:px-8 max-w-7xl mx-auto" dir={isRtl ? 'rtl' : 'ltr'}>
       
       {/* Section Header */}
       <div className="text-center space-y-3 mb-12">
         <h2 className="text-3xl md:text-5xl font-display text-gold-400 gold-glow">
-          تماس با من و سفارش همکاری
+          {t('contactTitle')}
         </h2>
         <div className="w-24 h-1 bg-gradient-to-r from-transparent via-gold-400 to-transparent mx-auto" />
         <p className="text-gray-400 font-sans text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-          آماده همکاری در زمینه‌های آهنگسازی، تنظیم قطعات، نوازندگی استودیویی، میکس و مسترینگ و برگزاری دوره‌های تخصصی.
+          {t('contactDesc')}
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
         
         {/* Contact Info Card (5 Cols) */}
-        <div className="lg:col-span-5 space-y-6 order-2 lg:order-1 text-right">
+        <div className={`lg:col-span-5 space-y-6 order-2 lg:order-1 ${isRtl ? 'text-right' : 'text-left'}`}>
           
           <div className="bg-[#110f0c] border border-gold-400/15 p-6 rounded-2xl space-y-6 font-sans">
-            <h3 className="text-md font-bold text-white mb-4">راه‌های ارتباطی مستقیم</h3>
+            <h3 className="text-md font-bold text-white mb-4">{t('contactCardTitle')}</h3>
 
             <div className="space-y-5">
               <div className="flex items-center gap-4">
@@ -77,7 +79,7 @@ export default function Contact({ onAddMessage }: ContactProps) {
                   <Mail className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-500 block">پست الکترونیکی</span>
+                  <span className="text-[10px] text-gray-500 block">{t('emailLabel')}</span>
                   <a href="mailto:kianour.partovi@example.com" className="text-xs text-gray-300 hover:text-gold-400 transition-colors">
                     kianour.partovi@example.com
                   </a>
@@ -89,9 +91,9 @@ export default function Contact({ onAddMessage }: ContactProps) {
                   <Phone className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-500 block">تلفن هماهنگی برنامه‌ها</span>
+                  <span className="text-[10px] text-gray-500 block">{t('phoneLabel')}</span>
                   <a href="tel:+982188888888" className="text-xs text-gray-300 hover:text-gold-400 transition-colors" dir="ltr">
-                    +۹۸ ۲۱ ۸۸۸۸ ۸۸۸۸
+                    +98 21 8888 8888
                   </a>
                 </div>
               </div>
@@ -101,23 +103,23 @@ export default function Contact({ onAddMessage }: ContactProps) {
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-500 block">استودیوی شخصی</span>
-                  <span className="text-xs text-gray-300">تهران، خیابان ولیعصر، تقاطع مطهری، استودیو نوستالژیا</span>
+                  <span className="text-[10px] text-gray-500 block">{t('addressLabel')}</span>
+                  <span className="text-xs text-gray-300">{t('officeAddress')}</span>
                 </div>
               </div>
             </div>
 
             <div className="border-t border-gold-400/10 pt-4 text-xs text-gray-400 flex items-center gap-2">
               <Shield className="w-4 h-4 text-gold-400/60" />
-              <span>پاسخگویی سریع پیام‌ها در کمتر از ۲۴ ساعت کاری.</span>
+              <span>{t('workHoursLabel')} {t('workHoursValue')}</span>
             </div>
           </div>
 
           {/* Social connections badge */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-gold-950/10 to-gold-900/10 border border-gold-500/10 text-right font-sans">
-            <h4 className="text-xs font-bold text-gold-400 mb-2">استخدام آهنگساز و تهیه‌کننده:</h4>
+          <div className={`p-5 rounded-2xl bg-gradient-to-br from-gold-950/10 to-gold-900/10 border border-gold-500/10 ${isRtl ? 'text-right' : 'text-left'} font-sans`}>
+            <h4 className="text-xs font-bold text-gold-400 mb-2">{t('formTitle')}:</h4>
             <p className="text-[11px] text-gray-400 leading-relaxed">
-              اگر به دنبال خلق یک اثر منحصر به فرد با امضای صوتی آنالوگ، بداهه‌نوازی‌های غنی گیتار جز، و استانداردهای علمی جهانی برای موسیقی تیزر، آلبوم شخصی، تئاتر یا سینما هستید، از فرم روبه‌رو برای ثبت درخواست استفاده کنید.
+              {t('contactCardDesc')}
             </p>
           </div>
         </div>
@@ -137,23 +139,24 @@ export default function Contact({ onAddMessage }: ContactProps) {
                 >
                   <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                   <div>
-                    <span className="font-bold">پیام شما با موفقیت در سیستم ثبت شد!</span>
-                    <span className="block mt-0.5 text-emerald-400/70">می‌توانید پیام ارسالی خود را در بخش مدیریت پیام‌های پنل مدیریت مشاهده فرمایید.</span>
+                    <span className="font-bold">{t('successMsg')}</span>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <form onSubmit={handleSubmit} className="space-y-5 font-sans text-right">
+            <form onSubmit={handleSubmit} className={`space-y-5 font-sans ${isRtl ? 'text-right' : 'text-left'}`}>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
-                  <label htmlFor="name" className="text-xs font-bold text-gray-400">نام و نام‌خانوادگی <span className="text-red-500">*</span></label>
+                  <label htmlFor="name" className="text-xs font-bold text-gray-400">
+                    {t('inputName')} <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     id="name"
                     required
-                    placeholder="استاد کیانور گرانقدر..."
+                    placeholder={t('inputName')}
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full bg-[#1c1914] border border-gold-400/20 rounded-lg py-2.5 px-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold-400 transition-colors"
@@ -161,7 +164,9 @@ export default function Contact({ onAddMessage }: ContactProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="email" className="text-xs font-bold text-gray-400">نشانی ایمیل <span className="text-red-500">*</span></label>
+                  <label htmlFor="email" className="text-xs font-bold text-gray-400">
+                    {t('inputEmail')} <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="email"
                     id="email"
@@ -176,11 +181,13 @@ export default function Contact({ onAddMessage }: ContactProps) {
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="subject" className="text-xs font-bold text-gray-400">موضوع پیام</label>
+                <label htmlFor="subject" className="text-xs font-bold text-gray-400">
+                  {t('inputSubject')}
+                </label>
                 <input
                   type="text"
                   id="subject"
-                  placeholder="سفارش تنظیم، همکاری خلاقانه، ضبط گیتار..."
+                  placeholder={t('inputSubject')}
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   className="w-full bg-[#1c1914] border border-gold-400/20 rounded-lg py-2.5 px-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold-400 transition-colors"
@@ -188,12 +195,14 @@ export default function Contact({ onAddMessage }: ContactProps) {
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="message" className="text-xs font-bold text-gray-400">متن پیام <span className="text-red-500">*</span></label>
+                <label htmlFor="message" className="text-xs font-bold text-gray-400">
+                  {t('inputMessage')} <span className="text-red-500">*</span>
+                </label>
                 <textarea
                   id="message"
                   required
                   rows={4}
-                  placeholder="جزئیات طرح یا ایده همکاری خود را بنویسید..."
+                  placeholder={t('inputMessage')}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   className="w-full bg-[#1c1914] border border-gold-400/20 rounded-lg py-2.5 px-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold-400 transition-colors resize-none"
@@ -216,12 +225,12 @@ export default function Contact({ onAddMessage }: ContactProps) {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span>درحال ارسال پیام نوستالژیک...</span>
+                    <span>{t('sendingBtn')}</span>
                   </>
                 ) : (
                   <>
-                    <Send className="w-4 h-4 transform rotate-180 text-black" />
-                    <span>ارسال پیام و طنین همکاری</span>
+                    <Send className={`w-4 h-4 text-black ${isRtl ? 'transform rotate-180' : ''}`} />
+                    <span>{t('submitBtn')}</span>
                   </>
                 )}
               </button>

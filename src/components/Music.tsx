@@ -4,6 +4,7 @@ import { Play, Pause, Music as MusicIcon, Disc, Star, Calendar, Sliders, Refresh
 import { Track } from '../types';
 import { tracks as defaultTracks } from '../data';
 import CassettePlayer from './CassettePlayer';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface MusicProps {
   ambientSound: boolean;
@@ -11,6 +12,7 @@ interface MusicProps {
 }
 
 export default function Music({ ambientSound, allTracks }: MusicProps) {
+  const { language, isRtl, t } = useLanguage();
   const [currentTrack, setCurrentTrack] = useState<Track>(() => allTracks[0] || defaultTracks[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>('همه');
@@ -22,6 +24,15 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
   const filteredTracks = selectedGenre === 'همه' 
     ? allTracks 
     : allTracks.filter(t => t.genre === selectedGenre);
+
+  // Translate Farsi numbers to English
+  const formatYear = (yr: string) => {
+    if (!yr) return '';
+    if (language === 'en') {
+      return yr.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d).toString());
+    }
+    return yr;
+  };
 
   // If currentTrack is not in the allTracks list (e.g. deleted), select the first one
   useEffect(() => {
@@ -108,16 +119,16 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
   }, []);
 
   return (
-    <section id="music" className="py-12 md:py-20 px-4 md:px-8 max-w-7xl mx-auto" dir="rtl">
+    <section id="music" className="py-12 md:py-20 px-4 md:px-8 max-w-7xl mx-auto" dir={isRtl ? 'rtl' : 'ltr'}>
       
       {/* Title */}
       <div className="text-center space-y-3 mb-12">
         <h2 className="text-3xl md:text-5xl font-display text-gold-400 gold-glow">
-          شنیدن آثار و آلبوم‌ها
+          {t('musicTitle')}
         </h2>
         <div className="w-24 h-1 bg-gradient-to-r from-transparent via-gold-400 to-transparent mx-auto" />
         <p className="text-gray-400 font-sans text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-          گلچینی از برترین تکنوازی‌ها، ترانه‌ها، بداهه‌نوازی‌های جاز و پروژه‌های تنظیمی کیانور پرتوی در سبک‌های جاز، سول و فانک.
+          {t('musicDesc')}
         </p>
       </div>
 
@@ -133,9 +144,9 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
         {/* Left Side: Retro Cassette Tape Player (6 Cols) */}
         <div className="lg:col-span-6 flex flex-col items-center space-y-6">
           <div className="w-full">
-            <h3 className="text-white font-sans font-bold text-base mb-4 text-right flex items-center gap-2">
+            <h3 className={`text-white font-sans font-bold text-base mb-4 ${isRtl ? 'text-right' : 'text-left'} flex items-center gap-2 justify-start`}>
               <span className="w-2.5 h-2.5 rounded-full bg-gold-400" />
-              <span>پخش‌کننده نوار کاست آنالوگ (تعاملی)</span>
+              <span>{t('cassetteTitle')}</span>
             </h3>
             
             <CassettePlayer
@@ -149,20 +160,20 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
           </div>
 
           {/* Style Bio Notes under player */}
-          <div className="w-full bg-[#110f0c] border border-gold-400/10 rounded-xl p-5 text-right font-sans">
+          <div className={`w-full bg-[#110f0c] border border-gold-400/10 rounded-xl p-5 ${isRtl ? 'text-right' : 'text-left'} font-sans`}>
             <h4 className="text-gold-300 font-bold text-sm mb-2 flex items-center gap-1.5 justify-start">
               <Star className="w-4 h-4 text-gold-400" />
-              <span>درباره اثر در حال پخش:</span>
+              <span>{t('aboutTrackTitle')}</span>
             </h4>
             <p className="text-xs text-gray-400 leading-relaxed">
-              {currentTrack.description}
+              {language === 'fa' ? currentTrack.description : (currentTrack.descriptionEn || currentTrack.description)}
             </p>
             <div className="border-t border-gold-400/10 mt-3 pt-3 grid grid-cols-2 gap-4 text-[11px] text-gray-500">
-              <div>
-                <span className="text-gold-400 font-medium">سازهای محوری:</span> {currentTrack.instrument}
+              <div className="text-right ltr:text-left">
+                <span className="text-gold-400 font-medium">{t('trackInstruments')}</span> {language === 'fa' ? currentTrack.instrument : (currentTrack.instrumentEn || currentTrack.instrument)}
               </div>
-              <div className="text-left" dir="ltr">
-                <span className="text-gold-400 font-medium font-sans">Year:</span> {currentTrack.year}
+              <div className="text-left rtl:text-right" dir={isRtl ? 'rtl' : 'ltr'}>
+                <span className="text-gold-400 font-medium font-sans">{t('trackYear')}</span> {formatYear(currentTrack.year)}
               </div>
             </div>
           </div>
@@ -183,7 +194,7 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
                     : 'bg-[#14120f] border-gold-400/20 text-gray-400 hover:border-gold-400/60 hover:text-gold-300'
                 }`}
               >
-                {genre === 'همه' ? 'همه سبک‌ها' : genre}
+                {genre === 'همه' ? t('allGenres') : genre}
               </button>
             ))}
           </div>
@@ -217,7 +228,7 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
                       <div className="relative w-12 h-12 rounded-lg bg-black border border-gold-400/20 overflow-hidden flex items-center justify-center">
                         <img 
                           src={track.coverUrl} 
-                          alt={track.title} 
+                          alt={language === 'fa' ? track.title : track.titleEn} 
                           className={`w-full h-full object-cover grayscale opacity-80 ${isCurrent ? 'grayscale-0 rotate-12 scale-110' : ''}`}
                           referrerPolicy="no-referrer"
                         />
@@ -235,9 +246,9 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
                       </div>
 
                       {/* Titles & info */}
-                      <div className="text-right font-sans">
+                      <div className={`text-right ltr:text-left font-sans`}>
                         <h4 className={`text-sm font-bold transition-colors ${isCurrent ? 'text-gold-400' : 'text-white'}`}>
-                          {track.title}
+                          {language === 'fa' ? track.title : track.titleEn}
                         </h4>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[10px] bg-gold-400/10 text-gold-300 px-1.5 py-0.5 rounded font-medium">
@@ -245,7 +256,7 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
                           </span>
                           <span className="text-[10px] text-gray-500 flex items-center gap-1">
                             <Calendar className="w-3 h-3 text-gold-500/40" />
-                            {track.year}
+                            {formatYear(track.year)}
                           </span>
                         </div>
                       </div>
@@ -254,7 +265,7 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
                     {/* Left: Duration and Play Indicators */}
                     <div className="flex items-center gap-4 text-xs font-mono text-gray-400">
                       <span className="hidden md:inline text-[10px] text-gray-500 font-sans max-w-[120px] truncate text-left" dir="ltr">
-                        {track.instrument}
+                        {language === 'fa' ? track.instrument : (track.instrumentEn || track.instrument)}
                       </span>
                       <span className="bg-[#171410] px-2 py-1 rounded border border-gold-400/5 text-[11px]">
                         {track.duration}
@@ -269,8 +280,8 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
 
           {/* Analog aesthetic footer tag */}
           <div className="flex items-center justify-between p-3.5 bg-[#14120f]/60 rounded-xl border border-gold-400/5 text-[10px] font-mono text-gold-400/40" dir="ltr">
-            <span>SOUND DESIGN BY KIANOUR PARTOVI</span>
-            <span>HIGH-FIDELITY 192KBPS DOLBY</span>
+            <span>{t('soundDesignCredit')}</span>
+            <span>{t('soundQualityLabel')}</span>
           </div>
         </div>
 

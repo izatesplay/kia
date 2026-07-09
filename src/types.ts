@@ -7,8 +7,10 @@ export interface Track {
   audioUrl: string;
   coverUrl: string;
   description: string;
+  descriptionEn?: string;
   year: string;
   instrument: string;
+  instrumentEn?: string;
 }
 
 export interface ContactMessage {
@@ -22,6 +24,9 @@ export interface ContactMessage {
 
 export interface Achievement {
   year: string;
+  yearEn?: string;
   title: string;
+  titleEn?: string;
   description: string;
+  descriptionEn?: string;
 }
