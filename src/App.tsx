@@ -32,7 +32,7 @@ const defaultMessages: ContactMessage[] = [
 ];
 
 export default function App() {
-  const { language, toggleLanguage, isRtl, t } = useLanguage();
+  const { language, toggleLanguage, isRtl, t, setCustomTranslations } = useLanguage();
   const [activeSection, setActiveSection] = useState<string>('home');
   const [showAdminPanel, setShowAdminPanel] = useState<boolean>(false);
   const [ambientSound, setAmbientSound] = useState<boolean>(true);
@@ -49,6 +49,13 @@ export default function App() {
 
   // Loaded custom colors settings from server
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
+
+  // Loaded custom content (translations override, equipment, custom cards)
+  const [siteContent, setSiteContent] = useState<any>({
+    translations: {},
+    equipment: null,
+    customCards: []
+  });
 
   const applyColors = (colors: Record<string, string>) => {
     const root = document.documentElement;
@@ -107,17 +114,51 @@ export default function App() {
       })
       .catch(err => console.error("Error loading messages from server:", err));
 
-    // 4. Fetch settings (colors)
+    // 4. Fetch settings (colors & content)
     apiFetch('/api/settings')
       .then(res => res.json())
       .then(data => {
-        if (data && data.colors) {
-          setSiteColors(data.colors);
-          applyColors(data.colors);
+        if (data) {
+          if (data.colors) {
+            setSiteColors(data.colors);
+            applyColors(data.colors);
+          }
+          if (data.content) {
+            setSiteContent(data.content);
+            if (data.content.translations) {
+              setCustomTranslations(data.content.translations);
+            }
+          }
         }
       })
       .catch(err => console.error("Error loading settings from server:", err));
   }, []);
+
+  const handleUpdateContent = async (newContent: any) => {
+    setSiteContent(newContent);
+    if (newContent.translations) {
+      setCustomTranslations(newContent.translations);
+    }
+    try {
+      const res = await apiFetch('/api/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ content: newContent })
+      });
+      const data = await res.json();
+      if (data && data.content) {
+        setSiteContent(data.content);
+        if (data.content.translations) {
+          setCustomTranslations(data.content.translations);
+        }
+        return data.content;
+      }
+    } catch (err) {
+      console.error("Error saving content to server:", err);
+    }
+  };
 
   const handleUpdateColors = async (newColors: Record<string, string>) => {
     setSiteColors(newColors);
@@ -278,7 +319,7 @@ export default function App() {
               <Music ambientSound={ambientSound} allTracks={allTracks} />
             )}
             {activeSection === 'about' && (
-              <About />
+              <About siteContent={siteContent} />
             )}
             {activeSection === 'contact' && (
               <Contact onAddMessage={handleAddMessage} />
@@ -392,6 +433,8 @@ export default function App() {
             onDeleteTrack={handleDeleteTrack}
             siteColors={siteColors}
             onUpdateColors={handleUpdateColors}
+            siteContent={siteContent}
+            onUpdateContent={handleUpdateContent}
           />
         )}
       </AnimatePresence>

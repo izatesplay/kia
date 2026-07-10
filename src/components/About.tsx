@@ -4,8 +4,91 @@ import { Award, GraduationCap, Calendar, ShieldCheck, Heart, Radio, Disc, Music,
 import { kianourProfile, achievements } from '../data';
 import { useLanguage } from '../lib/LanguageContext';
 
-export default function About() {
+const DEFAULT_EQUIPMENT = {
+  titleFa: "تجهیزات استودیویی و اجرای زنده",
+  titleEn: "Studio & Live Equipment",
+  items: [
+    {
+      categoryFa: "میکروفون‌ها",
+      categoryEn: "Microphones",
+      listFa: ["Shure SM57", "sE Electronics sE2200", "Rode NT1 Signature Series", "Neumann U47"],
+      listEn: ["Shure SM57", "sE Electronics sE2200", "Rode NT1 Signature Series", "Neumann U47"]
+    },
+    {
+      categoryFa: "پردازنده‌های چند افکت",
+      categoryEn: "Multi-Effects Processors",
+      listFa: ["BOSS GT-100", "DigiTech RP1000"],
+      listEn: ["BOSS GT-100", "DigiTech RP1000"]
+    },
+    {
+      categoryFa: "پدال‌بورد",
+      categoryEn: "Pedalboard",
+      listFa: ["پدال‌بورد حرفه‌ای سفارشی (Custom Professional Pedalboard)"],
+      listEn: ["Custom Professional Pedalboard"]
+    },
+    {
+      categoryFa: "گیتارهای الکتریک",
+      categoryEn: "Electric Guitars",
+      listFa: [
+        "Fender American Standard Stratocaster (HSS/HSH Configuration) – Alnico II Pickups",
+        "PRS USA (HH) – Alnico II Pickups",
+        "Fender Stratocaster Japan (SSS) – Lace Sensor Pickups",
+        "Ibanez JS Series (HH) – Alnico II Pickups"
+      ],
+      listEn: [
+        "Fender American Standard Stratocaster (HSS/HSH Configuration) – Alnico II Pickups",
+        "PRS USA (HH) – Alnico II Pickups",
+        "Fender Stratocaster Japan (SSS) – Lace Sensor Pickups",
+        "Ibanez JS Series (HH) – Alnico II Pickups"
+      ]
+    },
+    {
+      categoryFa: "گیتارهای آکوستیک و کلاسیک",
+      categoryEn: "Acoustic & Classical Guitars",
+      listFa: [
+        "Compus Japan Acoustic Guitar",
+        "Handmade Cutaway Nylon-String Guitar",
+        "Cuenca Classical Guitar"
+      ],
+      listEn: [
+        "Compus Japan Acoustic Guitar",
+        "Handmade Cutaway Nylon-String Guitar",
+        "Cuenca Classical Guitar"
+      ]
+    },
+    {
+      categoryFa: "کیبوردها",
+      categoryEn: "Keyboards",
+      listFa: [
+        "Korg TR Music Workstation",
+        "Casio Vintage Keyboard"
+      ],
+      listEn: [
+        "Korg TR Music Workstation",
+        "Casio Vintage Keyboard"
+      ]
+    },
+    {
+      categoryFa: "کامپیوتر و ایستگاه کاری",
+      categoryEn: "Computer & Workstation",
+      listFa: [
+        "Apple Mac Studio (M2 Max)"
+      ],
+      listEn: [
+        "Apple Mac Studio (M2 Max)"
+      ]
+    }
+  ]
+};
+
+interface AboutProps {
+  siteContent?: any;
+}
+
+export default function About({ siteContent }: AboutProps) {
   const { language, isRtl, t } = useLanguage();
+
+  const equipmentData = siteContent?.equipment || DEFAULT_EQUIPMENT;
 
   return (
     <section id="about" className="py-12 md:py-20 px-4 md:px-8 max-w-7xl mx-auto" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -244,6 +327,80 @@ export default function About() {
         </div>
 
       </div>
+
+      {/* Studio & Live Equipment Section */}
+      <div className="mt-20 space-y-8">
+        <div className={`text-center ${isRtl ? 'md:text-right' : 'md:text-left'} space-y-2`}>
+          <h3 className={`text-2xl md:text-3xl font-display text-gold-400 gold-glow flex items-center justify-center ${isRtl ? 'md:justify-start' : 'md:justify-end'} gap-3`}>
+            <Radio className="w-6 h-6 text-gold-400 animate-pulse" />
+            <span>{language === 'fa' ? equipmentData.titleFa : equipmentData.titleEn}</span>
+          </h3>
+          <p className="text-xs text-gray-400 leading-relaxed font-sans">
+            {language === 'fa' 
+              ? 'فهرست تجهیزات تخصصی استودیوی شخصی و اجراهای زنده استاد کیانور پرتوی' 
+              : 'List of professional gear used in personal studio recording and live concerts'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {equipmentData.items.map((cat: any, idx: number) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.05, duration: 0.5 }}
+              className="bg-site-surface border border-gold-400/10 hover:border-gold-400/30 rounded-2xl p-5 relative overflow-hidden transition-all duration-300 group box-glow flex flex-col justify-between"
+              style={{ backgroundColor: 'var(--site-surface)' }}
+            >
+              <div className="absolute top-0 left-0 w-24 h-24 bg-gold-400/2 rounded-full blur-2xl pointer-events-none group-hover:bg-gold-400/4 transition-all" />
+              <div>
+                <h4 className="text-sm font-sans font-bold text-gold-400 border-b border-gold-400/10 pb-2 mb-3.5 flex items-center justify-between">
+                  <span>{language === 'fa' ? cat.categoryFa : cat.categoryEn}</span>
+                  <span className="text-[10px] font-mono text-gray-500">{(idx + 1).toString().padStart(2, '0')}</span>
+                </h4>
+                <ul className="space-y-2">
+                  {(language === 'fa' ? cat.listFa : cat.listEn).map((item: string, iIndex: number) => (
+                    <li key={iIndex} className="text-xs text-gray-300 flex items-start gap-2 leading-relaxed font-sans">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gold-400/40 mt-1.5 flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Custom Dynamic Cards */}
+      {siteContent?.customCards && siteContent.customCards.length > 0 && (
+        <div className="mt-16 space-y-6">
+          <div className="h-px bg-gradient-to-r from-transparent via-gold-400/15 to-transparent w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
+            {siteContent.customCards.map((card: any, idx: number) => (
+              <motion.div
+                key={card.id || idx}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="bg-site-surface border border-gold-400/10 hover:border-gold-400/30 rounded-2xl p-6 relative overflow-hidden transition-all duration-300 group box-glow"
+                style={{ backgroundColor: 'var(--site-surface)' }}
+              >
+                <div className="absolute top-0 left-0 w-24 h-24 bg-gold-400/2 rounded-full blur-2xl pointer-events-none" />
+                <h4 className="text-md font-sans font-bold text-gold-400 border-b border-gold-400/10 pb-2.5 mb-4">
+                  {language === 'fa' ? card.titleFa : card.titleEn}
+                </h4>
+                <p className="text-xs text-gray-300 leading-relaxed whitespace-pre-line font-sans">
+                  {language === 'fa' ? card.contentFa : card.contentEn}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </section>
   );
 }

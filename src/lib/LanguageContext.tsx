@@ -7,6 +7,8 @@ interface LanguageContextType {
   toggleLanguage: () => void;
   isRtl: boolean;
   t: (key: keyof typeof translations) => string;
+  customTranslations: Record<string, string>;
+  setCustomTranslations: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }
 
 const translations = {
@@ -257,6 +259,20 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return (saved as Language) || 'fa';
   });
 
+  const [customTranslations, setCustomTranslations] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    // Fetch custom translations from settings
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.content && data.content.translations) {
+          setCustomTranslations(data.content.translations);
+        }
+      })
+      .catch(err => console.error("Error loading custom translations:", err));
+  }, []);
+
   const toggleLanguage = () => {
     setLanguage((prev) => {
       const next = prev === 'fa' ? 'en' : 'fa';
@@ -284,16 +300,24 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const t = (key: keyof typeof translations): string => {
     if (language === 'en') {
-      const enKey = `${key}En` as keyof typeof translations;
-      if (enKey in translations) {
-        return translations[enKey];
+      const enKey = `${key}En`;
+      if (customTranslations && customTranslations[enKey]) {
+        return customTranslations[enKey];
+      }
+      const enKeyCast = enKey as keyof typeof translations;
+      if (enKeyCast in translations) {
+        return translations[enKeyCast];
+      }
+    } else {
+      if (customTranslations && customTranslations[key]) {
+        return customTranslations[key];
       }
     }
     return translations[key];
   };
 
   return (
-    <LanguageContext.Provider value={{ language, toggleLanguage, isRtl, t }}>
+    <LanguageContext.Provider value={{ language, toggleLanguage, isRtl, t, customTranslations, setCustomTranslations }}>
       {children}
     </LanguageContext.Provider>
   );

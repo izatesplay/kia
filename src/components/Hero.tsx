@@ -51,7 +51,7 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             className="inline-flex items-center gap-2 px-3 py-1 bg-gold-400/10 border border-gold-400/30 rounded-full text-gold-400 text-xs font-sans font-medium"
           >
             <span className="w-2 h-2 rounded-full bg-gold-400 animate-ping" />
-            <span>{language === 'fa' ? kianourProfile.experience : kianourProfile.experienceEn}</span>
+            <span>{t('heroSubtitle')}</span>
           </motion.div>
 
           <motion.div
@@ -68,7 +68,7 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
               )}
             </h2>
             <p className="text-lg text-gold-200/80 font-sans font-medium">
-              {language === 'fa' ? kianourProfile.title : kianourProfile.titleEn}
+              {t('artistSubtitle')}
             </p>
           </motion.div>
 
@@ -78,7 +78,7 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-gray-400 text-base leading-relaxed max-w-2xl font-light"
           >
-            {language === 'fa' ? kianourProfile.bio : kianourProfile.bioEn}
+            {t('aboutBioP1')}
           </motion.p>
 
           <motion.div

@@ -23,7 +23,86 @@ interface AdminPanelProps {
   onDeleteTrack: (id: string) => void;
   siteColors?: Record<string, string>;
   onUpdateColors?: (colors: Record<string, string>) => void;
+  siteContent?: any;
+  onUpdateContent?: (content: any) => void;
 }
+
+const DEFAULT_EQUIPMENT = {
+  titleFa: "تجهیزات استودیویی و اجرای زنده",
+  titleEn: "Studio & Live Equipment",
+  items: [
+    {
+      categoryFa: "میکروفون‌ها",
+      categoryEn: "Microphones",
+      listFa: ["Shure SM57", "sE Electronics sE2200", "Rode NT1 Signature Series", "Neumann U47"],
+      listEn: ["Shure SM57", "sE Electronics sE2200", "Rode NT1 Signature Series", "Neumann U47"]
+    },
+    {
+      categoryFa: "پردازنده‌های چند افکت",
+      categoryEn: "Multi-Effects Processors",
+      listFa: ["BOSS GT-100", "DigiTech RP1000"],
+      listEn: ["BOSS GT-100", "DigiTech RP1000"]
+    },
+    {
+      categoryFa: "پدال‌بورد",
+      categoryEn: "Pedalboard",
+      listFa: ["پدال‌بورد حرفه‌ای سفارشی (Custom Professional Pedalboard)"],
+      listEn: ["Custom Professional Pedalboard"]
+    },
+    {
+      categoryFa: "گیتارهای الکتریک",
+      categoryEn: "Electric Guitars",
+      listFa: [
+        "Fender American Standard Stratocaster (HSS/HSH Configuration) – Alnico II Pickups",
+        "PRS USA (HH) – Alnico II Pickups",
+        "Fender Stratocaster Japan (SSS) – Lace Sensor Pickups",
+        "Ibanez JS Series (HH) – Alnico II Pickups"
+      ],
+      listEn: [
+        "Fender American Standard Stratocaster (HSS/HSH Configuration) – Alnico II Pickups",
+        "PRS USA (HH) – Alnico II Pickups",
+        "Fender Stratocaster Japan (SSS) – Lace Sensor Pickups",
+        "Ibanez JS Series (HH) – Alnico II Pickups"
+      ]
+    },
+    {
+      categoryFa: "گیتارهای آکوستیک و کلاسیک",
+      categoryEn: "Acoustic & Classical Guitars",
+      listFa: [
+        "Compus Japan Acoustic Guitar",
+        "Handmade Cutaway Nylon-String Guitar",
+        "Cuenca Classical Guitar"
+      ],
+      listEn: [
+        "Compus Japan Acoustic Guitar",
+        "Handmade Cutaway Nylon-String Guitar",
+        "Cuenca Classical Guitar"
+      ]
+    },
+    {
+      categoryFa: "کیبوردها",
+      categoryEn: "Keyboards",
+      listFa: [
+        "Korg TR Music Workstation",
+        "Casio Vintage Keyboard"
+      ],
+      listEn: [
+        "Korg TR Music Workstation",
+        "Casio Vintage Keyboard"
+      ]
+    },
+    {
+      categoryFa: "کامپیوتر و ایستگاه کاری",
+      categoryEn: "Computer & Workstation",
+      listFa: [
+        "Apple Mac Studio (M2 Max)"
+      ],
+      listEn: [
+        "Apple Mac Studio (M2 Max)"
+      ]
+    }
+  ]
+};
 
 const DEFAULT_PALETTE: Record<string, string> = {
   bg: '#0a0a0a',
@@ -52,14 +131,177 @@ export default function AdminPanel({
   onAddTrack,
   onDeleteTrack,
   siteColors = {},
-  onUpdateColors
+  onUpdateColors,
+  siteContent,
+  onUpdateContent
 }: AdminPanelProps) {
   const { language, isRtl, t } = useLanguage();
 
-  // Tabs: inbox, edit-bio, upload-music, settings
-  const [activeTab, setActiveTab] = useState<'inbox' | 'edit-bio' | 'upload-music' | 'settings'>('inbox');
+  // Tabs: inbox, edit-bio, content-cms, upload-music, settings
+  const [activeTab, setActiveTab] = useState<'inbox' | 'edit-bio' | 'content-cms' | 'upload-music' | 'settings'>('inbox');
   const [editedBio, setEditedBio] = useState(bioContent);
   const [isSaved, setIsSaved] = useState(false);
+
+  // Bilingual bio states
+  const [bioP1Fa, setBioP1Fa] = useState('');
+  const [bioP1En, setBioP1En] = useState('');
+  const [bioP2Fa, setBioP2Fa] = useState('');
+  const [bioP2En, setBioP2En] = useState('');
+
+  // Equipment category & list states
+  const [equipmentInput, setEquipmentInput] = useState<any>(null);
+
+  // Custom cards state
+  const [customCardsInput, setCustomCardsInput] = useState<any[]>([]);
+
+  // Action feed states
+  const [isBioSaved, setIsBioSaved] = useState(false);
+  const [isCmsSaved, setIsCmsSaved] = useState(false);
+
+  // Sync siteContent values on load
+  React.useEffect(() => {
+    if (siteContent) {
+      if (siteContent.translations) {
+        setBioP1Fa(siteContent.translations.aboutBioP1 || '');
+        setBioP1En(siteContent.translations.aboutBioP1En || '');
+        setBioP2Fa(siteContent.translations.aboutBioP2 || '');
+        setBioP2En(siteContent.translations.aboutBioP2En || '');
+      } else {
+        setBioP1Fa('موسیقی جاز و سبک‌های مشتق از آن مانند اسموت جاز، آر‌اند‌بی و فانک، به من یاد داده‌اند که چطور در ساختاری به غایت مهندسی‌شده و بر پایه‌ی قوانین پیچیده‌ی هارمونی، رهایی عمیق را تجربه کنم. در ساخته‌هایم همواره تلاش دارم پلی بین فضای ارکسترال کلاسیک و ساختارهای نو پاپ ایجاد کنم تا صدا برای شنونده‌ی حقیقت‌جو غنی و تامل‌برانگیز باشد.');
+        setBioP1En('Jazz and its derivative genres like smooth jazz, R&B, and funk have taught me how to experience deep freedom within a highly engineered structure based on complex rules of harmony. In my compositions, I always strive to bridge the classical orchestral space and modern pop structures to create a sound that is both intellectually rich and emotionally touching.');
+        setBioP2Fa('به عنوان یک مهندس صدا معتقدم اصالت صدای آنالوگ - با تمام خش‌خش‌های شیرین و گرمای منحصربه‌فردش - جادویی دارد که هرگز در دنیای سرد دیجیتال شبیه‌سازی نخواهد شد. از این رو، در استودیوی شخصی‌ام همواره تلاش می‌کنم رنگ صوتی و بافت زنده و نوستالژیک را در کارنامه هنری‌ام حفظ کنم.');
+        setBioP2En('As a sound engineer, I believe that the authenticity of analog sound—with all its delightful crackles and unique warmth—has a magic that can never be replicated in the cold digital world. That is why in my personal studio, I always try to preserve this signature sound and nostalgic organic texture in my works.');
+      }
+      if (siteContent.equipment) {
+        setEquipmentInput(JSON.parse(JSON.stringify(siteContent.equipment)));
+      } else {
+        setEquipmentInput(JSON.parse(JSON.stringify(DEFAULT_EQUIPMENT)));
+      }
+      if (siteContent.customCards) {
+        setCustomCardsInput(JSON.parse(JSON.stringify(siteContent.customCards)));
+      } else {
+        setCustomCardsInput([]);
+      }
+    }
+  }, [siteContent]);
+
+  // Equipment mutation helpers
+  const handleAddEquipmentCategory = () => {
+    const newCategory = {
+      categoryFa: 'دسته‌بندی جدید',
+      categoryEn: 'New Category',
+      listFa: [],
+      listEn: []
+    };
+    setEquipmentInput((prev: any) => {
+      const items = prev?.items ? [...prev.items] : [];
+      return {
+        ...prev,
+        items: [...items, newCategory]
+      };
+    });
+  };
+
+  const handleUpdateCategoryTitle = (index: number, field: 'categoryFa' | 'categoryEn', value: string) => {
+    setEquipmentInput((prev: any) => {
+      const items = [...prev.items];
+      items[index] = {
+        ...items[index],
+        [field]: value
+      };
+      return {
+        ...prev,
+        items
+      };
+    });
+  };
+
+  const handleUpdateCategoryItems = (index: number, lang: 'Fa' | 'En', textValue: string) => {
+    const itemsList = textValue.split('\n').map(item => item.trim()).filter(Boolean);
+    setEquipmentInput((prev: any) => {
+      const items = [...prev.items];
+      items[index] = {
+        ...items[index],
+        [`list${lang}`]: itemsList
+      };
+      return {
+        ...prev,
+        items
+      };
+    });
+  };
+
+  const handleDeleteCategory = (index: number) => {
+    setEquipmentInput((prev: any) => {
+      const items = prev.items.filter((_: any, i: number) => i !== index);
+      return {
+        ...prev,
+        items
+      };
+    });
+  };
+
+  // Custom Cards mutation helpers
+  const handleAddCustomCard = () => {
+    const newCard = {
+      id: `card-${Date.now()}`,
+      titleFa: 'عنوان جدید',
+      titleEn: 'New Card Title',
+      contentFa: 'محتوای کارت جدید را اینجا بنویسید...',
+      contentEn: 'Write the new card content here...'
+    };
+    setCustomCardsInput(prev => [...prev, newCard]);
+  };
+
+  const handleDeleteCustomCard = (id: string) => {
+    setCustomCardsInput(prev => prev.filter(card => card.id !== id));
+  };
+
+  const handleUpdateCustomCardField = (id: string, field: string, value: string) => {
+    setCustomCardsInput(prev => prev.map(card => {
+      if (card.id === id) {
+        return {
+          ...card,
+          [field]: value
+        };
+      }
+      return card;
+    }));
+  };
+
+  const handleSaveBio = async () => {
+    if (onUpdateContent) {
+      const currentTranslations = siteContent?.translations || {};
+      const updatedTranslations = {
+        ...currentTranslations,
+        aboutBioP1: bioP1Fa,
+        aboutBioP1En: bioP1En,
+        aboutBioP2: bioP2Fa,
+        aboutBioP2En: bioP2En,
+      };
+      const updatedContent = {
+        ...siteContent,
+        translations: updatedTranslations
+      };
+      await onUpdateContent(updatedContent);
+      setIsBioSaved(true);
+      setTimeout(() => setIsBioSaved(false), 3000);
+    }
+    onUpdateBio(bioP1Fa); // compatibility fallback for old components
+  };
+
+  const handleSaveCms = async () => {
+    if (onUpdateContent) {
+      const updatedContent = {
+        ...siteContent,
+        equipment: equipmentInput,
+        customCards: customCardsInput
+      };
+      await onUpdateContent(updatedContent);
+      setIsCmsSaved(true);
+      setTimeout(() => setIsCmsSaved(false), 3000);
+    }
+  };
 
   // Dynamic colors customization state
   const [colorsInput, setColorsInput] = useState<Record<string, string>>({
@@ -143,12 +385,6 @@ export default function AdminPanel({
   // File Input Refs
   const audioInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
-
-  const handleSaveBio = () => {
-    onUpdateBio(editedBio);
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
-  };
 
   // Login handler
   const handleLogin = (e: React.FormEvent) => {
@@ -403,22 +639,6 @@ export default function AdminPanel({
                 </button>
               </form>
 
-              {/* Login Hints */}
-              <div className="border-t border-gold-400/10 pt-4 text-center">
-                <p className="text-[10px] text-gold-400/40 leading-relaxed">
-                  {language === 'fa' ? (
-                    <>
-                      راهنمای ورود برای تست دمو: <br />
-                      نام کاربری: <span className="font-mono font-bold text-gold-400/70">kianour</span> و رمز عبور: <span className="font-mono font-bold text-gold-400/70">partovi</span>
-                    </>
-                  ) : (
-                    <>
-                      Demo Credentials: <br />
-                      Username: <span className="font-mono font-bold text-gold-400/70">kianour</span> / Password: <span className="font-mono font-bold text-gold-400/70">partovi</span>
-                    </>
-                  )}
-                </p>
-              </div>
             </motion.div>
           </div>
         ) : (
@@ -427,50 +647,62 @@ export default function AdminPanel({
             <div className={`bg-[#181818] border-b border-[#2c3338] px-4 ${isRtl ? 'pl-36' : 'pr-36'} flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-thin flex-shrink-0`}>
               <button
                 onClick={() => setActiveTab('inbox')}
-                className={`px-4 py-3 text-xs font-bold border-b-2 flex items-center gap-2 cursor-pointer transition-colors ${
+                className={`px-4 py-3 text-[11px] font-bold border-b-2 flex items-center gap-1.5 cursor-pointer transition-colors ${
                   activeTab === 'inbox' 
                     ? 'border-gold-400 text-gold-400 bg-[#2c3338]/40' 
                     : 'border-transparent text-gray-400 hover:text-gold-400'
                 }`}
               >
-                <Inbox className="w-4 h-4" />
-                <span>{language === 'fa' ? `صندوق پیام‌ها (${messages.length})` : `Inbox (${messages.length})`}</span>
+                <Inbox className="w-3.5 h-3.5" />
+                <span>{language === 'fa' ? `پیام‌ها (${messages.length})` : `Inbox (${messages.length})`}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('edit-bio')}
-                className={`px-4 py-3 text-xs font-bold border-b-2 flex items-center gap-2 cursor-pointer transition-colors ${
+                className={`px-4 py-3 text-[11px] font-bold border-b-2 flex items-center gap-1.5 cursor-pointer transition-colors ${
                   activeTab === 'edit-bio' 
                     ? 'border-gold-400 text-gold-400 bg-[#2c3338]/40' 
                     : 'border-transparent text-gray-400 hover:text-gold-400'
                 }`}
               >
-                <FileText className="w-4 h-4" />
-                <span>{language === 'fa' ? 'ویرایش بیوگرافی' : 'Edit Biography'}</span>
+                <FileText className="w-3.5 h-3.5" />
+                <span>{language === 'fa' ? 'بیوگرافی دو زبانه' : 'Bilingual Bio'}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('content-cms')}
+                className={`px-4 py-3 text-[11px] font-bold border-b-2 flex items-center gap-1.5 cursor-pointer transition-colors ${
+                  activeTab === 'content-cms' 
+                    ? 'border-gold-400 text-gold-400 bg-[#2c3338]/40' 
+                    : 'border-transparent text-gray-400 hover:text-gold-400'
+                }`}
+              >
+                <Star className="w-3.5 h-3.5" />
+                <span>{language === 'fa' ? 'تجهیزات و بخش‌ها' : 'Gear & Cards'}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('upload-music')}
-                className={`px-4 py-3 text-xs font-bold border-b-2 flex items-center gap-2 cursor-pointer transition-colors ${
+                className={`px-4 py-3 text-[11px] font-bold border-b-2 flex items-center gap-1.5 cursor-pointer transition-colors ${
                   activeTab === 'upload-music' 
                     ? 'border-gold-400 text-gold-400 bg-[#2c3338]/40' 
                     : 'border-transparent text-gray-400 hover:text-gold-400'
                 }`}
               >
-                <Music className="w-4 h-4" />
-                <span>{language === 'fa' ? `مدیریت موزیک‌ها (${allTracks.length})` : `Tracks (${allTracks.length})`}</span>
+                <Music className="w-3.5 h-3.5" />
+                <span>{language === 'fa' ? `آثار (${allTracks.length})` : `Tracks (${allTracks.length})`}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('settings')}
-                className={`px-4 py-3 text-xs font-bold border-b-2 flex items-center gap-2 cursor-pointer transition-colors ${
+                className={`px-4 py-3 text-[11px] font-bold border-b-2 flex items-center gap-1.5 cursor-pointer transition-colors ${
                   activeTab === 'settings' 
                     ? 'border-gold-400 text-gold-400 bg-[#2c3338]/40' 
                     : 'border-transparent text-gray-400 hover:text-gold-400'
                 }`}
               >
-                <Settings className="w-4 h-4" />
-                <span>{language === 'fa' ? 'تنظیمات پوسته' : 'System Settings'}</span>
+                <Settings className="w-3.5 h-3.5" />
+                <span>{language === 'fa' ? 'پوسته' : 'Theme'}</span>
               </button>
             </div>
 
@@ -535,46 +767,312 @@ export default function AdminPanel({
                   </motion.div>
                 )}
 
-                {/* TAB 2: EDIT BIO */}
+                {/* TAB 2: EDIT BIO (BILINGUAL) */}
                 {activeTab === 'edit-bio' && (
                   <motion.div
                     key="bio-tab"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="space-y-4"
+                    className="space-y-4 font-sans"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-[#f0f0f1]">{language === 'fa' ? 'ویرایش بیوگرافی استاد کیانور پرتوی' : 'Edit Biography Text'}</h3>
-                      <span className="text-[10px] text-gray-500">{language === 'fa' ? 'ذخیره در سرور' : 'Sync with Server'}</span>
+                      <h3 className="text-sm font-bold text-[#f0f0f1]">{language === 'fa' ? 'ویرایش بیوگرافی دو زبانه استاد کیانور پرتوی' : 'Edit Bilingual Artist Biography'}</h3>
+                      <span className="text-[10px] text-gray-500">{language === 'fa' ? 'محتوای صفحه درباره من' : 'About Page Content'}</span>
                     </div>
 
-                    <div className={`space-y-4 font-sans ${isRtl ? 'text-right' : 'text-left'}`}>
+                    <div className={`space-y-5 ${isRtl ? 'text-right' : 'text-left'}`}>
+                      {/* Paragraph 1 - Persian */}
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-gray-400">
-                          {language === 'fa' ? 'متن اصلی زندگی‌نامه و دستاوردها' : 'Main Artist Biography / Profile info'}
+                        <label className="text-xs font-bold text-gold-400 flex items-center gap-1.5 justify-start">
+                          <span className="w-2 h-2 rounded-full bg-gold-400" />
+                          <span>{language === 'fa' ? 'پاراگراف اول بیوگرافی (فارسی)' : 'Biography Paragraph 1 (Persian)'}</span>
                         </label>
                         <textarea
-                          rows={8}
-                          value={editedBio}
-                          onChange={(e) => setEditedBio(e.target.value)}
-                          className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-4 text-xs leading-relaxed text-gray-200 focus:outline-none focus:border-gold-400 resize-none font-sans"
+                          rows={4}
+                          value={bioP1Fa}
+                          onChange={(e) => setBioP1Fa(e.target.value)}
+                          className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-3.5 text-xs leading-relaxed text-gray-200 focus:outline-none focus:border-gold-400 resize-none font-sans"
                         />
                       </div>
 
-                      {isSaved && (
+                      {/* Paragraph 1 - English */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-gold-400 flex items-center gap-1.5 justify-start">
+                          <span className="w-2 h-2 rounded-full bg-gold-400" />
+                          <span>{language === 'fa' ? 'پاراگراف اول بیوگرافی (انگلیسی)' : 'Biography Paragraph 1 (English)'}</span>
+                        </label>
+                        <textarea
+                          rows={4}
+                          value={bioP1En}
+                          onChange={(e) => setBioP1En(e.target.value)}
+                          className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-3.5 text-xs leading-relaxed text-gray-200 focus:outline-none focus:border-gold-400 resize-none font-sans text-left"
+                          dir="ltr"
+                        />
+                      </div>
+
+                      {/* Paragraph 2 - Persian */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-gold-400 flex items-center gap-1.5 justify-start">
+                          <span className="w-2 h-2 rounded-full bg-gold-400" />
+                          <span>{language === 'fa' ? 'پاراگراف دوم بیوگرافی (فارسی)' : 'Biography Paragraph 2 (Persian)'}</span>
+                        </label>
+                        <textarea
+                          rows={4}
+                          value={bioP2Fa}
+                          onChange={(e) => setBioP2Fa(e.target.value)}
+                          className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-3.5 text-xs leading-relaxed text-gray-200 focus:outline-none focus:border-gold-400 resize-none font-sans"
+                        />
+                      </div>
+
+                      {/* Paragraph 2 - English */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-gold-400 flex items-center gap-1.5 justify-start">
+                          <span className="w-2 h-2 rounded-full bg-gold-400" />
+                          <span>{language === 'fa' ? 'پاراگراف دوم بیوگرافی (انگلیسی)' : 'Biography Paragraph 2 (English)'}</span>
+                        </label>
+                        <textarea
+                          rows={4}
+                          value={bioP2En}
+                          onChange={(e) => setBioP2En(e.target.value)}
+                          className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-3.5 text-xs leading-relaxed text-gray-200 focus:outline-none focus:border-gold-400 resize-none font-sans text-left"
+                          dir="ltr"
+                        />
+                      </div>
+
+                      {isBioSaved && (
                         <div className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2 justify-start font-sans">
                           <Check className="w-4 h-4 text-emerald-400" />
-                          <span>{language === 'fa' ? 'تغییرات بیوگرافی با موفقیت ذخیره و در صفحه اصلی اعمال شد!' : 'Biography updated and synced with server successfully!'}</span>
+                          <span>{language === 'fa' ? 'بیوگرافی دو زبانه با موفقیت ذخیره و اعمال شد!' : 'Bilingual biography saved and synchronized successfully!'}</span>
                         </div>
                       )}
 
                       <button
                         onClick={handleSaveBio}
-                        className="w-full py-3 bg-gold-500 hover:bg-gold-400 text-black font-bold text-xs rounded-lg flex items-center justify-center gap-2 shadow cursor-pointer transition-colors"
+                        className="w-full py-3 bg-gold-500 hover:bg-gold-400 text-black font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow cursor-pointer transition-colors"
                       >
                         <Save className="w-4 h-4 text-black" />
-                        <span>{language === 'fa' ? 'بروزرسانی نهایی محتوا' : 'Update Content Permanently'}</span>
+                        <span>{language === 'fa' ? 'ذخیره بیوگرافی دو زبانه' : 'Save Bilingual Biography'}</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* TAB 2.5: GENERAL SECTIONS CMS */}
+                {activeTab === 'content-cms' && (
+                  <motion.div
+                    key="content-cms-tab"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-6 font-sans"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-[#f0f0f1]">{language === 'fa' ? 'مدیریت تجهیزات و کارت‌های سفارشی' : 'Manage Equipment & Custom Cards'}</h3>
+                      <span className="text-[10px] text-gray-500">{language === 'fa' ? 'بخش‌های درباره من' : 'About Page Sections'}</span>
+                    </div>
+
+                    <div className={`space-y-6 ${isRtl ? 'text-right' : 'text-left'}`}>
+                      
+                      {/* EQUIPMENT ENGINE PANEL */}
+                      <div className="bg-[#181818] border border-gold-400/10 rounded-2xl p-5 space-y-4">
+                        <div className="flex items-center justify-between border-b border-gold-400/10 pb-3">
+                          <div className="flex items-center gap-2">
+                            <Star className="w-4 h-4 text-gold-400" />
+                            <span className="text-xs font-bold text-white">{language === 'fa' ? 'فهرست تجهیزات استودیو و لایو' : 'Studio & Live Equipment List'}</span>
+                          </div>
+                          <button
+                            onClick={handleAddEquipmentCategory}
+                            className="text-[10px] bg-gold-500/10 hover:bg-gold-500/20 text-gold-400 border border-gold-400/20 px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1"
+                          >
+                            <PlusCircle className="w-3.5 h-3.5" />
+                            <span>{language === 'fa' ? 'افزودن دسته‌بندی' : 'Add Category'}</span>
+                          </button>
+                        </div>
+
+                        {/* Title Overrides */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] text-gray-400 font-bold">{language === 'fa' ? 'عنوان بخش تجهیزات (فارسی)' : 'Section Title (Persian)'}</label>
+                            <input
+                              type="text"
+                              value={equipmentInput?.titleFa || ''}
+                              onChange={(e) => setEquipmentInput((prev: any) => ({ ...prev, titleFa: e.target.value }))}
+                              className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-2.5 text-xs text-gray-200 focus:outline-none focus:border-gold-400 font-sans"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] text-gray-400 font-bold">{language === 'fa' ? 'عنوان بخش تجهیزات (English)' : 'Section Title (English)'}</label>
+                            <input
+                              type="text"
+                              value={equipmentInput?.titleEn || ''}
+                              onChange={(e) => setEquipmentInput((prev: any) => ({ ...prev, titleEn: e.target.value }))}
+                              className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-2.5 text-xs text-gray-200 focus:outline-none focus:border-gold-400 font-sans text-left"
+                              dir="ltr"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Categories List */}
+                        <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1 scrollbar-thin">
+                          {equipmentInput?.items?.map((cat: any, idx: number) => (
+                            <div key={idx} className="bg-black/30 border border-[#2c3338] rounded-xl p-4 space-y-3 relative">
+                              <button
+                                onClick={() => handleDeleteCategory(idx)}
+                                className="absolute top-3.5 left-3.5 text-red-400 hover:text-red-300 transition-colors p-1"
+                                title={language === 'fa' ? 'حذف دسته‌بندی' : 'Delete Category'}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+
+                              <span className="text-[10px] font-mono text-gold-400/50 block">#{idx + 1}</span>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] text-gray-400">{language === 'fa' ? 'نام دسته‌بندی (فارسی)' : 'Category Name (Fa)'}</label>
+                                  <input
+                                    type="text"
+                                    value={cat.categoryFa}
+                                    onChange={(e) => handleUpdateCategoryTitle(idx, 'categoryFa', e.target.value)}
+                                    className="w-full bg-[#111111] border border-[#2c3338]/60 rounded-lg p-2 text-xs text-white focus:outline-none"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] text-gray-400">{language === 'fa' ? 'نام دسته‌بندی (English)' : 'Category Name (En)'}</label>
+                                  <input
+                                    type="text"
+                                    value={cat.categoryEn}
+                                    onChange={(e) => handleUpdateCategoryTitle(idx, 'categoryEn', e.target.value)}
+                                    className="w-full bg-[#111111] border border-[#2c3338]/60 rounded-lg p-2 text-xs text-white focus:outline-none text-left"
+                                    dir="ltr"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] text-gray-400">{language === 'fa' ? 'آیتم‌ها (هر کدام در یک سطر جدید - فارسی)' : 'Items (one per line - Persian)'}</label>
+                                  <textarea
+                                    rows={3}
+                                    value={cat.listFa?.join('\n') || ''}
+                                    onChange={(e) => handleUpdateCategoryItems(idx, 'Fa', e.target.value)}
+                                    placeholder="میکروفون ۱&#10;میکروفون ۲"
+                                    className="w-full bg-[#111111] border border-[#2c3338]/60 rounded-lg p-2 text-[11px] leading-relaxed text-gray-300 focus:outline-none font-sans"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] text-gray-400">{language === 'fa' ? 'آیتم‌ها (هر کدام در یک سطر جدید - انگلیسی)' : 'Items (one per line - English)'}</label>
+                                  <textarea
+                                    rows={3}
+                                    value={cat.listEn?.join('\n') || ''}
+                                    onChange={(e) => handleUpdateCategoryItems(idx, 'En', e.target.value)}
+                                    placeholder="Mic 1&#10;Mic 2"
+                                    className="w-full bg-[#111111] border border-[#2c3338]/60 rounded-lg p-2 text-[11px] leading-relaxed text-gray-300 focus:outline-none font-sans text-left"
+                                    dir="ltr"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* CUSTOM CARDS PANEL */}
+                      <div className="bg-[#181818] border border-gold-400/10 rounded-2xl p-5 space-y-4">
+                        <div className="flex items-center justify-between border-b border-gold-400/10 pb-3">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-gold-400" />
+                            <span className="text-xs font-bold text-white">{language === 'fa' ? 'کارت‌های اطلاعاتی سفارشی' : 'Custom Info Cards'}</span>
+                          </div>
+                          <button
+                            onClick={handleAddCustomCard}
+                            className="text-[10px] bg-gold-500/10 hover:bg-gold-500/20 text-gold-400 border border-gold-400/20 px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1"
+                          >
+                            <PlusCircle className="w-3.5 h-3.5" />
+                            <span>{language === 'fa' ? 'افزودن کارت سفارشی' : 'Add Info Card'}</span>
+                          </button>
+                        </div>
+
+                        {customCardsInput.length === 0 ? (
+                          <div className="text-center p-6 text-gray-500 text-xs border border-dashed border-[#2c3338] rounded-xl">
+                            {language === 'fa' ? 'هیچ کارت اطلاعاتی سفارشی هنوز اضافه نشده است.' : 'No custom info cards added yet.'}
+                          </div>
+                        ) : (
+                          <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1 scrollbar-thin">
+                            {customCardsInput.map((card, idx) => (
+                              <div key={card.id || idx} className="bg-black/30 border border-[#2c3338] rounded-xl p-4 space-y-3 relative">
+                                <button
+                                  onClick={() => handleDeleteCustomCard(card.id)}
+                                  className="absolute top-3.5 left-3.5 text-red-400 hover:text-red-300 transition-colors p-1"
+                                  title={language === 'fa' ? 'حذف کارت' : 'Delete Card'}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+
+                                <span className="text-[10px] font-mono text-gold-400/50 block">#{idx + 1}</span>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] text-gray-400">{language === 'fa' ? 'عنوان کارت (فارسی)' : 'Card Title (Persian)'}</label>
+                                    <input
+                                      type="text"
+                                      value={card.titleFa}
+                                      onChange={(e) => handleUpdateCustomCardField(card.id, 'titleFa', e.target.value)}
+                                      className="w-full bg-[#111111] border border-[#2c3338]/60 rounded-lg p-2 text-xs text-white focus:outline-none"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] text-gray-400">{language === 'fa' ? 'عنوان کارت (English)' : 'Card Title (English)'}</label>
+                                    <input
+                                      type="text"
+                                      value={card.titleEn}
+                                      onChange={(e) => handleUpdateCustomCardField(card.id, 'titleEn', e.target.value)}
+                                      className="w-full bg-[#111111] border border-[#2c3338]/60 rounded-lg p-2 text-xs text-white focus:outline-none text-left"
+                                      dir="ltr"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] text-gray-400">{language === 'fa' ? 'محتوای کارت (فارسی)' : 'Card Content (Persian)'}</label>
+                                    <textarea
+                                      rows={3}
+                                      value={card.contentFa}
+                                      onChange={(e) => handleUpdateCustomCardField(card.id, 'contentFa', e.target.value)}
+                                      className="w-full bg-[#111111] border border-[#2c3338]/60 rounded-lg p-2 text-[11px] leading-relaxed text-gray-300 focus:outline-none font-sans"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] text-gray-400">{language === 'fa' ? 'محتوای کارت (English)' : 'Card Content (English)'}</label>
+                                    <textarea
+                                      rows={3}
+                                      value={card.contentEn}
+                                      onChange={(e) => handleUpdateCustomCardField(card.id, 'contentEn', e.target.value)}
+                                      className="w-full bg-[#111111] border border-[#2c3338]/60 rounded-lg p-2 text-[11px] leading-relaxed text-gray-300 focus:outline-none font-sans text-left"
+                                      dir="ltr"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {isCmsSaved && (
+                        <div className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2 justify-start font-sans">
+                          <Check className="w-4 h-4 text-emerald-400" />
+                          <span>{language === 'fa' ? 'تجهیزات و کارت‌های سفارشی با موفقیت ذخیره و اعمال شدند!' : 'Equipment list and custom cards saved successfully!'}</span>
+                        </div>
+                      )}
+
+                      <button
+                        onClick={handleSaveCms}
+                        className="w-full py-3 bg-gold-500 hover:bg-gold-400 text-black font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow cursor-pointer transition-colors"
+                      >
+                        <Save className="w-4 h-4 text-black" />
+                        <span>{language === 'fa' ? 'ذخیره تغییرات تجهیزات و بخش‌ها' : 'Save Section Content Changes'}</span>
                       </button>
                     </div>
                   </motion.div>

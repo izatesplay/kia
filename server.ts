@@ -507,45 +507,82 @@ async function startServer() {
     try {
       if (dbPool) {
         try {
-          const [rows]: any = await dbPool.query('SELECT value FROM settings WHERE name = ?', ['colors']);
-          if (rows.length > 0) {
-            return res.json({ colors: JSON.parse(rows[0].value) });
+          const [rows]: any = await dbPool.query('SELECT name, value FROM settings');
+          const settingsObj: any = { colors: {}, content: {} };
+          for (const row of rows) {
+            try {
+              settingsObj[row.name] = JSON.parse(row.value);
+            } catch (je) {
+              settingsObj[row.name] = row.value;
+            }
           }
+          return res.json(settingsObj);
         } catch (dbErr) {
           console.warn('MySQL GET settings failed, falling back to local JSON:', dbErr);
         }
       }
       if (fs.existsSync(settingsFile)) {
         const data = fs.readFileSync(settingsFile, 'utf8');
-        return res.json({ colors: JSON.parse(data) });
+        try {
+          const parsed = JSON.parse(data);
+          return res.json(parsed.colors ? parsed : { colors: parsed, content: {} });
+        } catch (je) {
+          return res.json({ colors: {}, content: {} });
+        }
       }
-      res.json({ colors: {} });
+      res.json({ colors: {}, content: {} });
     } catch (e) {
-      res.json({ colors: {} });
+      res.json({ colors: {}, content: {} });
     }
   });
 
   // POST settings
   app.post('/api/settings', async (req, res) => {
     try {
-      const { colors } = req.body;
-      if (!colors || typeof colors !== 'object') {
-        return res.status(400).json({ error: 'Colors must be an object' });
-      }
-
-      const colorsJson = JSON.stringify(colors);
-
+      const { colors, content } = req.body;
+      
       if (dbPool) {
         try {
-          await dbPool.query('INSERT INTO settings (name, value) ON DUPLICATE KEY UPDATE value = ?', ['colors', colorsJson, colorsJson]);
-          return res.json({ success: true, colors });
+          if (colors) {
+            const colorsJson = JSON.stringify(colors);
+            await dbPool.query('INSERT INTO settings (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?', ['colors', colorsJson, colorsJson]);
+          }
+          if (content) {
+            const contentJson = JSON.stringify(content);
+            await dbPool.query('INSERT INTO settings (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?', ['content', contentJson, contentJson]);
+          }
+          
+          // Return full settings
+          const [rows]: any = await dbPool.query('SELECT name, value FROM settings');
+          const settingsObj: any = { colors: {}, content: {} };
+          for (const row of rows) {
+            try {
+              settingsObj[row.name] = JSON.parse(row.value);
+            } catch (je) {
+              settingsObj[row.name] = row.value;
+            }
+          }
+          return res.json({ success: true, ...settingsObj });
         } catch (dbErr) {
           console.warn('MySQL UPDATE settings failed, falling back to local JSON:', dbErr);
         }
       }
 
-      fs.writeFileSync(settingsFile, colorsJson, 'utf8');
-      res.json({ success: true, colors });
+      let localSettings: any = { colors: {}, content: {} };
+      if (fs.existsSync(settingsFile)) {
+        try {
+          const fileData = fs.readFileSync(settingsFile, 'utf8');
+          const parsed = JSON.parse(fileData);
+          localSettings = parsed.colors ? parsed : { colors: parsed, content: {} };
+        } catch (je) {
+          console.error(je);
+        }
+      }
+      if (colors) localSettings.colors = colors;
+      if (content) localSettings.content = content;
+
+      fs.writeFileSync(settingsFile, JSON.stringify(localSettings, null, 2), 'utf8');
+      res.json({ success: true, ...localSettings });
     } catch (error) {
       res.status(500).json({ error: 'Failed to save settings' });
     }
