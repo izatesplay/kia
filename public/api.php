@@ -96,6 +96,11 @@ $createTablesQueries = [
     "bio" => "CREATE TABLE IF NOT EXISTS bio (
         id INT PRIMARY KEY AUTO_INCREMENT,
         content TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+
+    "settings" => "CREATE TABLE IF NOT EXISTS settings (
+        name VARCHAR(100) PRIMARY KEY,
+        value TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
 ];
 
@@ -112,6 +117,17 @@ if ($bioCount['count'] == 0) {
     $defaultBio = "من کیانور پرتوی هستم؛ نوازنده گیتار، خواننده، آهنگساز، تنظیم‌کننده و تهیه‌کننده موسیقی با بیش از ۲۰ سال سابقه حرفه‌ای. در طول فعالیتم، بین دنیای ارکستر و فضای مدرن موسیقی پاپ و جز پل زده‌ام تا آثاری خلق کنم که هم از نظر فنی غنی باشند و هم از نظر احساسی تأثیرگذار. دارای مدرک کارشناسی موسیقی از دانشگاه موسیقی کنسرواتوار تهران و کارشناسی ارشد آهنگسازی کاربردی از دانشکده موسیقی تهران هستم و همچنین به عنوان مهندس صدا فعالیت می‌کنم.";
     $stmt = $mysqli->prepare("INSERT INTO bio (content) VALUES (?)");
     $stmt->bind_param("s", $defaultBio);
+    $stmt->execute();
+    $stmt->close();
+}
+
+// مقداردهی اولیه تنظیمات رنگ پیش‌فرض در اولین اجرا
+$checkSettings = $mysqli->query("SELECT COUNT(*) as count FROM settings WHERE name = 'colors'");
+$settingsCount = $checkSettings->fetch_assoc();
+if ($settingsCount['count'] == 0) {
+    $defaultSettings = "{}";
+    $stmt = $mysqli->prepare("INSERT INTO settings (name, value) VALUES ('colors', ?)");
+    $stmt->bind_param("s", $defaultSettings);
     $stmt->execute();
     $stmt->close();
 }
@@ -460,6 +476,31 @@ switch ($action) {
             }
         } else {
             send_error("متد درخواست نامعتبر است (باید POST باشد).", 405);
+        }
+        break;
+
+    // ح. مدیریت تنظیمات (Settings)
+    case 'settings':
+        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+            $result = $mysqli->query("SELECT value FROM settings WHERE name = 'colors' LIMIT 1");
+            $row = $result->fetch_assoc();
+            $colors = $row ? json_decode($row['value'], true) : new stdClass();
+            send_success(["colors" => $colors ? $colors : new stdClass()]);
+        } 
+        elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $input = json_decode(file_get_contents("php://input"), true);
+            $colors = isset($input['colors']) ? $input['colors'] : [];
+            $colorsJson = json_encode($colors, JSON_UNESCAPED_UNICODE);
+
+            $stmt = $mysqli->prepare("INSERT INTO settings (name, value) VALUES ('colors', ?) ON DUPLICATE KEY UPDATE value = ?");
+            $stmt->bind_param("ss", $colorsJson, $colorsJson);
+            
+            if ($stmt->execute()) {
+                $stmt->close();
+                send_success(["success" => true, "colors" => $colors]);
+            } else {
+                send_error("خطا در ویرایش تنظیمات رنگ: " . $stmt->error);
+            }
         }
         break;
 

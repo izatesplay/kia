@@ -21,7 +21,23 @@ interface AdminPanelProps {
   allTracks: Track[];
   onAddTrack: (track: Track) => void;
   onDeleteTrack: (id: string) => void;
+  siteColors?: Record<string, string>;
+  onUpdateColors?: (colors: Record<string, string>) => void;
 }
+
+const DEFAULT_PALETTE: Record<string, string> = {
+  bg: '#0a0a0a',
+  surface: '#14120f',
+  navbar: '#0f0e0c',
+  textPrimary: '#ffffff',
+  textSecondary: '#e0e0e0',
+  textMuted: '#888888',
+  accent: '#c9a050',
+  accentHover: '#d8bf93',
+  border: 'rgba(201, 160, 80, 0.2)',
+  success: '#10b981',
+  error: '#ef4444'
+};
 
 export default function AdminPanel({
   isOpen,
@@ -34,7 +50,9 @@ export default function AdminPanel({
   setAmbientSound,
   allTracks,
   onAddTrack,
-  onDeleteTrack
+  onDeleteTrack,
+  siteColors = {},
+  onUpdateColors
 }: AdminPanelProps) {
   const { language, isRtl, t } = useLanguage();
 
@@ -42,6 +60,64 @@ export default function AdminPanel({
   const [activeTab, setActiveTab] = useState<'inbox' | 'edit-bio' | 'upload-music' | 'settings'>('inbox');
   const [editedBio, setEditedBio] = useState(bioContent);
   const [isSaved, setIsSaved] = useState(false);
+
+  // Dynamic colors customization state
+  const [colorsInput, setColorsInput] = useState<Record<string, string>>({
+    bg: siteColors.bg || DEFAULT_PALETTE.bg,
+    surface: siteColors.surface || DEFAULT_PALETTE.surface,
+    navbar: siteColors.navbar || DEFAULT_PALETTE.navbar,
+    textPrimary: siteColors.textPrimary || DEFAULT_PALETTE.textPrimary,
+    textSecondary: siteColors.textSecondary || DEFAULT_PALETTE.textSecondary,
+    textMuted: siteColors.textMuted || DEFAULT_PALETTE.textMuted,
+    accent: siteColors.accent || DEFAULT_PALETTE.accent,
+    accentHover: siteColors.accentHover || DEFAULT_PALETTE.accentHover,
+    border: siteColors.border || DEFAULT_PALETTE.border,
+    success: siteColors.success || DEFAULT_PALETTE.success,
+    error: siteColors.error || DEFAULT_PALETTE.error
+  });
+
+  const [isColorsSaved, setIsColorsSaved] = useState(false);
+
+  // Sync colors inputs state with props when loaded
+  React.useEffect(() => {
+    setColorsInput({
+      bg: siteColors.bg || DEFAULT_PALETTE.bg,
+      surface: siteColors.surface || DEFAULT_PALETTE.surface,
+      navbar: siteColors.navbar || DEFAULT_PALETTE.navbar,
+      textPrimary: siteColors.textPrimary || DEFAULT_PALETTE.textPrimary,
+      textSecondary: siteColors.textSecondary || DEFAULT_PALETTE.textSecondary,
+      textMuted: siteColors.textMuted || DEFAULT_PALETTE.textMuted,
+      accent: siteColors.accent || DEFAULT_PALETTE.accent,
+      accentHover: siteColors.accentHover || DEFAULT_PALETTE.accentHover,
+      border: siteColors.border || DEFAULT_PALETTE.border,
+      success: siteColors.success || DEFAULT_PALETTE.success,
+      error: siteColors.error || DEFAULT_PALETTE.error
+    });
+  }, [siteColors]);
+
+  const handleColorChange = (key: string, value: string) => {
+    setColorsInput(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const handleSaveColors = () => {
+    if (onUpdateColors) {
+      onUpdateColors(colorsInput);
+      setIsColorsSaved(true);
+      setTimeout(() => setIsColorsSaved(false), 3000);
+    }
+  };
+
+  const handleResetColors = () => {
+    setColorsInput({ ...DEFAULT_PALETTE });
+    if (onUpdateColors) {
+      onUpdateColors(DEFAULT_PALETTE);
+      setIsColorsSaved(true);
+      setTimeout(() => setIsColorsSaved(false), 3000);
+    }
+  };
 
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -768,11 +844,117 @@ export default function AdminPanel({
                         </p>
                       </div>
 
+                      {/* Color Palette Customizer */}
+                      <div className="border-t border-[#2c3338] pt-5 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white block">{language === 'fa' ? 'سفارشی‌سازی رنگ‌های پوسته' : 'Theme Colors Customization'}</span>
+                          {isColorsSaved && (
+                            <span className="text-[10px] text-green-400 font-sans animate-pulse">
+                              {language === 'fa' ? '✓ ذخیره شد' : '✓ Saved'}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-[10px] text-gray-400 leading-relaxed">
+                          {language === 'fa' 
+                            ? 'کدهای رنگی دلخواه خود را برای هر یک از بخش‌های پورتفولیو وارد کنید یا از دایره رنگی استفاده کنید. برای اعمال تغییرات بر روی کلید ذخیره کلیک کنید.'
+                            : 'Specify custom color hex codes or click the color circles to adjust palette settings. Click Save to apply changes globally.'}
+                        </p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
+                          {Object.keys(DEFAULT_PALETTE).map((key) => {
+                            const label = language === 'fa' ? {
+                              bg: 'رنگ پس‌زمینه (Background)',
+                              surface: 'رنگ کارت‌ها و سطوح (Surface)',
+                              navbar: 'رنگ نوار ناوبری (Navbar)',
+                              textPrimary: 'رنگ متن اصلی (Primary Text)',
+                              textSecondary: 'رنگ متن فرعی (Secondary Text)',
+                              textMuted: 'رنگ متن کم‌رنگ (Muted Text)',
+                              accent: 'رنگ آکورد اصلی (Primary Accent)',
+                              accentHover: 'رنگ هاور آکورد (Hover Accent)',
+                              border: 'رنگ مرزها و خطوط (Border)',
+                              success: 'رنگ پیام موفقیت (Success)',
+                              error: 'رنگ پیام خطا (Error)'
+                            }[key] : {
+                              bg: 'Background Color',
+                              surface: 'Surface Area Color',
+                              navbar: 'Navigation Bar Color',
+                              textPrimary: 'Primary Text Color',
+                              textSecondary: 'Secondary Text Color',
+                              textMuted: 'Muted Text Color',
+                              accent: 'Primary Accent Theme',
+                              accentHover: 'Accent Hover State',
+                              border: 'Border & Lines Color',
+                              success: 'Success Message Highlight',
+                              error: 'Error / Alert Highlight'
+                            }[key];
+
+                            // Safe Hex helper for strictly formatted type="color" inputs
+                            const getSafeHex = (val: string) => {
+                              if (val && val.startsWith('#') && (val.length === 7 || val.length === 4)) {
+                                return val;
+                              }
+                              // fallback
+                              return '#c9a050';
+                            };
+
+                            return (
+                              <div key={key} className="flex flex-col gap-1 bg-black/30 border border-[#2c3338]/40 rounded-lg p-2.5">
+                                <span className="text-[10px] text-gray-400 font-bold block">{label}</span>
+                                <div className="flex items-center gap-2 mt-1">
+                                  {/* Visual Color Input circle */}
+                                  <div className="relative w-7 h-7 rounded-md overflow-hidden border border-white/10 flex-shrink-0 cursor-pointer">
+                                    <input 
+                                      type="color"
+                                      value={getSafeHex(colorsInput[key])}
+                                      onChange={(e) => handleColorChange(key, e.target.value)}
+                                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full scale-150"
+                                    />
+                                    <div className="w-full h-full" style={{ backgroundColor: colorsInput[key] || DEFAULT_PALETTE[key] }} />
+                                  </div>
+                                  
+                                  {/* Text Code input */}
+                                  <input 
+                                    type="text"
+                                    value={colorsInput[key]}
+                                    onChange={(e) => handleColorChange(key, e.target.value)}
+                                    placeholder={DEFAULT_PALETTE[key]}
+                                    className="flex-1 min-w-0 bg-[#111111] border border-gold-400/10 rounded px-2 py-1 text-[11px] leading-relaxed text-gray-200 focus:outline-none focus:border-gold-400/50 font-mono text-left"
+                                    dir="ltr"
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2.5 pt-3">
+                          <button
+                            onClick={handleSaveColors}
+                            className="flex-1 py-2 bg-gold-500 hover:bg-gold-400 text-black font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95"
+                          >
+                            <Save className="w-3.5 h-3.5" />
+                            <span>{language === 'fa' ? 'ذخیره تغییرات رنگ' : 'Save Custom Colors'}</span>
+                          </button>
+                          
+                          <button
+                            onClick={handleResetColors}
+                            className="py-2 px-4 bg-transparent hover:bg-white/5 border border-[#2c3338] text-gray-400 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                            title={language === 'fa' ? 'بازنشانی به رنگ‌های پیش‌فرض' : 'Reset to original theme'}
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            <span>{language === 'fa' ? 'رنگ پیش‌فرض' : 'Default Colors'}</span>
+                          </button>
+                        </div>
+                      </div>
+
                       {/* Reset default settings */}
                       <button
                         onClick={() => {
                           setEditedBio(bioContent);
                           setAmbientSound(true);
+                          handleResetColors();
                           alert(language === 'fa' ? 'تمامی تنظیمات و محتوا به حالت اولیه بازگردانی شد.' : 'All system options and parameters reset to default values.');
                         }}
                         className="w-full py-2.5 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white border border-[#2c3338] rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"

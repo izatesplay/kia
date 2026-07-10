@@ -70,7 +70,10 @@ export default function Contact({ onAddMessage }: ContactProps) {
         {/* Contact Info Card (5 Cols) */}
         <div className={`lg:col-span-5 space-y-6 order-2 lg:order-1 ${isRtl ? 'text-right' : 'text-left'}`}>
           
-          <div className="bg-[#110f0c] border border-gold-400/15 p-6 rounded-2xl space-y-6 font-sans">
+          <div 
+            className="bg-site-surface border border-gold-400/15 p-6 rounded-2xl space-y-6 font-sans"
+            style={{ backgroundColor: 'var(--site-surface)' }}
+          >
             <h3 className="text-md font-bold text-white mb-4">{t('contactCardTitle')}</h3>
 
             <div className="space-y-5">
@@ -126,7 +129,10 @@ export default function Contact({ onAddMessage }: ContactProps) {
 
         {/* Custom Retro Form (7 Cols) */}
         <div className="lg:col-span-7 order-1 lg:order-2">
-          <div className="bg-[#14120f] border-2 border-gold-400 rounded-2xl p-6 md:p-8 shadow-[0_15px_45px_rgba(0,0,0,0.8)] relative overflow-hidden">
+          <div 
+            className="bg-site-surface border-2 border-gold-400 rounded-2xl p-6 md:p-8 shadow-[0_15px_45px_rgba(0,0,0,0.8)] relative overflow-hidden"
+            style={{ backgroundColor: 'var(--site-surface)' }}
+          >
             
             {/* Success Notification Banner */}
             <AnimatePresence>

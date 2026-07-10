@@ -197,6 +197,13 @@ async function startServer() {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
 
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS settings (
+          name VARCHAR(100) PRIMARY KEY,
+          value TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+
       // Seed default tracks if empty
       const [existingTracks]: any = await connection.query('SELECT COUNT(*) as count FROM tracks');
       if (existingTracks[0].count === 0) {
@@ -228,6 +235,13 @@ async function startServer() {
         console.log('Default bio seeded to MySQL.');
       }
 
+      // Seed default settings if empty
+      const [existingSettings]: any = await connection.query('SELECT COUNT(*) as count FROM settings WHERE name = ?', ['colors']);
+      if (existingSettings[0].count === 0) {
+        await connection.query('INSERT INTO settings (name, value) VALUES (?, ?)', ['colors', '{}']);
+        console.log('Default settings seeded to MySQL.');
+      }
+
       connection.release();
     } catch (err) {
       console.error('MySQL database initialization failed, falling back to local JSON files:', err);
@@ -244,6 +258,7 @@ async function startServer() {
   const tracksFile = path.join(uploadsDir, 'tracks.json');
   const messagesFile = path.join(uploadsDir, 'messages.json');
   const bioFile = path.join(uploadsDir, 'bio.txt');
+  const settingsFile = path.join(uploadsDir, 'settings.json');
 
   // Initialize files with default data if not existing
   if (!fs.existsSync(tracksFile)) {
@@ -254,6 +269,9 @@ async function startServer() {
   }
   if (!fs.existsSync(bioFile)) {
     fs.writeFileSync(bioFile, DEFAULT_BIO, 'utf8');
+  }
+  if (!fs.existsSync(settingsFile)) {
+    fs.writeFileSync(settingsFile, '{}', 'utf8');
   }
 
   // Serve static uploaded files in both dev and prod
@@ -481,6 +499,55 @@ async function startServer() {
       res.json({ success: true, bio });
     } catch (error) {
       res.status(500).json({ error: 'Failed to save bio' });
+    }
+  });
+
+  // GET settings
+  app.get('/api/settings', async (req, res) => {
+    try {
+      if (dbPool) {
+        try {
+          const [rows]: any = await dbPool.query('SELECT value FROM settings WHERE name = ?', ['colors']);
+          if (rows.length > 0) {
+            return res.json({ colors: JSON.parse(rows[0].value) });
+          }
+        } catch (dbErr) {
+          console.warn('MySQL GET settings failed, falling back to local JSON:', dbErr);
+        }
+      }
+      if (fs.existsSync(settingsFile)) {
+        const data = fs.readFileSync(settingsFile, 'utf8');
+        return res.json({ colors: JSON.parse(data) });
+      }
+      res.json({ colors: {} });
+    } catch (e) {
+      res.json({ colors: {} });
+    }
+  });
+
+  // POST settings
+  app.post('/api/settings', async (req, res) => {
+    try {
+      const { colors } = req.body;
+      if (!colors || typeof colors !== 'object') {
+        return res.status(400).json({ error: 'Colors must be an object' });
+      }
+
+      const colorsJson = JSON.stringify(colors);
+
+      if (dbPool) {
+        try {
+          await dbPool.query('INSERT INTO settings (name, value) ON DUPLICATE KEY UPDATE value = ?', ['colors', colorsJson, colorsJson]);
+          return res.json({ success: true, colors });
+        } catch (dbErr) {
+          console.warn('MySQL UPDATE settings failed, falling back to local JSON:', dbErr);
+        }
+      }
+
+      fs.writeFileSync(settingsFile, colorsJson, 'utf8');
+      res.json({ success: true, colors });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to save settings' });
     }
   });
 

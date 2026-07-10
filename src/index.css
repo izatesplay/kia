@@ -1,24 +1,50 @@
 @import url('https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+:root {
+  --site-bg: #0a0a0a;
+  --site-surface: #14120f;
+  --site-navbar: #0f0e0c;
+  --site-text-primary: #ffffff;
+  --site-text-secondary: #e0e0e0;
+  --site-text-muted: #888888;
+  --site-accent: #c9a050;
+  --site-accent-hover: #d8bf93;
+  --site-border: rgba(201, 160, 80, 0.2);
+  --site-success: #10b981;
+  --site-error: #ef4444;
+}
+
 @theme {
   --font-sans: "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Lalezar", cursive, sans-serif;
   --font-serif: "Playfair Display", Georgia, serif;
   --font-mono: "JetBrains Mono", monospace;
   
-  /* Custom retro gold theme colors from Elegant Dark theme */
-  --color-gold-50: #fbf8f3;
-  --color-gold-100: #f4ecde;
-  --color-gold-200: #e6d6ba;
-  --color-gold-300: #d8bf93;
-  --color-gold-400: #c9a050; /* Elegant Dark Theme signature gold */
-  --color-gold-500: #a8813c;
-  --color-gold-600: #876329;
-  --color-gold-700: #664619;
-  --color-gold-800: #462f10;
-  --color-gold-900: #2b1b0a; /* Elegant Dark Theme background secondary blur */
-  --color-gold-950: #140c04;
+  --color-site-bg: var(--site-bg);
+  --color-site-surface: var(--site-surface);
+  --color-site-navbar: var(--site-navbar);
+  --color-site-text-primary: var(--site-text-primary);
+  --color-site-text-secondary: var(--site-text-secondary);
+  --color-site-text-muted: var(--site-text-muted);
+  --color-site-accent: var(--site-accent);
+  --color-site-accent-hover: var(--site-accent-hover);
+  --color-site-border: var(--site-border);
+  --color-site-success: var(--site-success);
+  --color-site-error: var(--site-error);
+  
+  /* Custom retro gold theme colors from Elegant Dark theme mapped to variables */
+  --color-gold-50: var(--site-text-primary);
+  --color-gold-100: var(--site-text-secondary);
+  --color-gold-200: var(--site-text-secondary);
+  --color-gold-300: var(--site-accent-hover);
+  --color-gold-400: var(--site-accent); /* Elegant Dark Theme signature gold */
+  --color-gold-500: var(--site-accent);
+  --color-gold-600: var(--site-accent);
+  --color-gold-700: var(--site-accent);
+  --color-gold-800: var(--site-border);
+  --color-gold-900: var(--site-surface); /* Elegant Dark Theme background secondary blur */
+  --color-gold-950: var(--site-bg);
 }
 
 /* Custom retro styling */
@@ -93,17 +119,17 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: var(--site-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
+  background: var(--site-surface);
   border-radius: 4px;
-  border: 1px solid #333333;
+  border: 1px solid var(--site-border);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #c9a050;
+  background: var(--site-accent);
 }
 
 html {
@@ -111,8 +137,8 @@ html {
 }
 
 body {
-  background-color: #0a0a0a;
-  color: #e0e0e0;
+  background-color: var(--site-bg);
+  color: var(--site-text-secondary);
   font-family: "Vazirmatn", sans-serif;
   overflow-x: hidden;
 }

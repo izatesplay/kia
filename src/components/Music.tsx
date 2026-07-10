@@ -160,7 +160,10 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
           </div>
 
           {/* Style Bio Notes under player */}
-          <div className={`w-full bg-[#110f0c] border border-gold-400/10 rounded-xl p-5 ${isRtl ? 'text-right' : 'text-left'} font-sans`}>
+          <div 
+            className={`w-full bg-site-surface border border-gold-400/10 rounded-xl p-5 ${isRtl ? 'text-right' : 'text-left'} font-sans`}
+            style={{ backgroundColor: 'var(--site-surface)' }}
+          >
             <h4 className="text-gold-300 font-bold text-sm mb-2 flex items-center gap-1.5 justify-start">
               <Star className="w-4 h-4 text-gold-400" />
               <span>{t('aboutTrackTitle')}</span>
@@ -191,8 +194,9 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
                 className={`text-xs px-3.5 py-1.5 rounded-full border transition-all cursor-pointer ${
                   selectedGenre === genre
                     ? 'bg-gold-400 border-gold-400 text-black font-bold'
-                    : 'bg-[#14120f] border-gold-400/20 text-gray-400 hover:border-gold-400/60 hover:text-gold-300'
+                    : 'bg-site-surface border-gold-400/20 text-gray-400 hover:border-gold-400/60 hover:text-gold-300'
                 }`}
+                style={selectedGenre !== genre ? { backgroundColor: 'var(--site-surface)' } : undefined}
               >
                 {genre === 'همه' ? t('allGenres') : genre}
               </button>
@@ -214,9 +218,10 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
                     onClick={() => selectTrack(track)}
                     className={`group relative p-4 rounded-xl border transition-all duration-300 flex items-center justify-between gap-4 cursor-pointer select-none ${
                       isCurrent 
-                        ? 'bg-[#1f1911] border-gold-400 shadow-[0_5px_15px_rgba(194,135,50,0.1)]' 
-                        : 'bg-[#12100e]/80 border-gold-400/10 hover:border-gold-400/30 hover:bg-[#181512]'
+                        ? 'bg-gold-400/10 border-gold-400 shadow-[0_5px_15px_rgba(194,135,50,0.1)]' 
+                        : 'bg-site-surface/80 border-gold-400/10 hover:border-gold-400/30 hover:bg-site-surface/90'
                     }`}
+                    style={{ backgroundColor: isCurrent ? 'rgba(201, 160, 80, 0.1)' : 'rgba(var(--site-surface), 0.8)' }}
                   >
                     {/* Hover gold glowing left bar */}
                     <div className={`absolute top-0 right-0 h-full w-1 rounded-l-md transition-all ${
@@ -279,7 +284,11 @@ export default function Music({ ambientSound, allTracks }: MusicProps) {
           </div>
 
           {/* Analog aesthetic footer tag */}
-          <div className="flex items-center justify-between p-3.5 bg-[#14120f]/60 rounded-xl border border-gold-400/5 text-[10px] font-mono text-gold-400/40" dir="ltr">
+          <div 
+            className="flex items-center justify-between p-3.5 bg-site-surface/60 rounded-xl border border-gold-400/5 text-[10px] font-mono text-gold-400/40" 
+            dir="ltr"
+            style={{ backgroundColor: 'rgba(var(--site-surface), 0.6)' }}
+          >
             <span>{t('soundDesignCredit')}</span>
             <span>{t('soundQualityLabel')}</span>
           </div>

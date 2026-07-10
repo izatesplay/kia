@@ -85,7 +85,8 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="p-4 bg-[#14120f] border border-gold-400/10 rounded-xl relative overflow-hidden group box-glow"
+            className="p-4 bg-site-surface border border-gold-400/10 rounded-xl relative overflow-hidden group box-glow"
+            style={{ backgroundColor: 'var(--site-surface)' }}
           >
             <div className="absolute right-0 top-0 w-24 h-24 bg-gold-400/2 rounded-full blur-xl group-hover:bg-gold-400/5 transition-all" />
             <h4 className="text-gold-400 font-sans font-bold text-sm mb-1">{t('heroPhilosophyTitle')}</h4>
@@ -126,7 +127,10 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-gold-400/10 font-sans"
           >
             <div className="flex items-center gap-2.5 text-gray-400 text-xs">
-              <div className="w-8 h-8 rounded-lg bg-[#14120f] border border-gold-400/20 flex items-center justify-center text-gold-400">
+              <div 
+                className="w-8 h-8 rounded-lg bg-site-surface border border-gold-400/20 flex items-center justify-center text-gold-400"
+                style={{ backgroundColor: 'var(--site-surface)' }}
+              >
                 <MapPin className="w-4 h-4" />
               </div>
               <div className={`flex flex-col ${isRtl ? 'text-right' : 'text-left'}`}>
@@ -136,7 +140,10 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             </div>
 
             <div className="flex items-center gap-2.5 text-gray-400 text-xs">
-              <div className="w-8 h-8 rounded-lg bg-[#14120f] border border-gold-400/20 flex items-center justify-center text-gold-400">
+              <div 
+                className="w-8 h-8 rounded-lg bg-site-surface border border-gold-400/20 flex items-center justify-center text-gold-400"
+                style={{ backgroundColor: 'var(--site-surface)' }}
+              >
                 <Calendar className="w-4 h-4" />
               </div>
               <div className={`flex flex-col ${isRtl ? 'text-right' : 'text-left'}`}>
@@ -146,7 +153,10 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             </div>
 
             <div className="flex items-center gap-2.5 text-gray-400 text-xs col-span-2 sm:col-span-1">
-              <div className="w-8 h-8 rounded-lg bg-[#14120f] border border-gold-400/20 flex items-center justify-center text-gold-400">
+              <div 
+                className="w-8 h-8 rounded-lg bg-site-surface border border-gold-400/20 flex items-center justify-center text-gold-400"
+                style={{ backgroundColor: 'var(--site-surface)' }}
+              >
                 <Award className="w-4 h-4" />
               </div>
               <div className={`flex flex-col ${isRtl ? 'text-right' : 'text-left'}`}>
@@ -178,7 +188,10 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             <div className="absolute -inset-1.5 bg-gradient-to-tr from-gold-600 to-gold-400 rounded-2xl blur opacity-35 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 z-0" />
 
             {/* Portrait Frame with Slideshow */}
-            <div className="relative z-10 w-[280px] sm:w-[340px] aspect-[3/4] bg-[#14120f] border-4 border-gold-400 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex flex-col justify-end group">
+            <div 
+              className="relative z-10 w-[280px] sm:w-[340px] aspect-[3/4] bg-site-surface border-4 border-gold-400 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex flex-col justify-end group"
+              style={{ backgroundColor: 'var(--site-surface)' }}
+            >
               <AnimatePresence mode="wait">
                 <motion.img
                   key={activeImgIndex}

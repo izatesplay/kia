@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Volume2, Music as MusicIcon, Disc, Star, ExternalLink, Mail, ArrowUp } from 'lucide-react';
+import { Volume2, Music as MusicIcon, Disc, Star, ExternalLink, Mail, ArrowUp, Globe } from 'lucide-react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Music from './components/Music';
@@ -32,7 +32,7 @@ const defaultMessages: ContactMessage[] = [
 ];
 
 export default function App() {
-  const { language, isRtl, t } = useLanguage();
+  const { language, toggleLanguage, isRtl, t } = useLanguage();
   const [activeSection, setActiveSection] = useState<string>('home');
   const [showAdminPanel, setShowAdminPanel] = useState<boolean>(false);
   const [ambientSound, setAmbientSound] = useState<boolean>(true);
@@ -46,6 +46,34 @@ export default function App() {
 
   // Loaded tracks from server
   const [allTracks, setAllTracks] = useState<Track[]>(defaultTracks);
+
+  // Loaded custom colors settings from server
+  const [siteColors, setSiteColors] = useState<Record<string, string>>({});
+
+  const applyColors = (colors: Record<string, string>) => {
+    const root = document.documentElement;
+    const mappings: Record<string, string> = {
+      bg: '--site-bg',
+      surface: '--site-surface',
+      navbar: '--site-navbar',
+      textPrimary: '--site-text-primary',
+      textSecondary: '--site-text-secondary',
+      textMuted: '--site-text-muted',
+      accent: '--site-accent',
+      accentHover: '--site-accent-hover',
+      border: '--site-border',
+      success: '--site-success',
+      error: '--site-error'
+    };
+
+    Object.entries(mappings).forEach(([key, variableName]) => {
+      if (colors && colors[key]) {
+        root.style.setProperty(variableName, colors[key]);
+      } else {
+        root.style.removeProperty(variableName);
+      }
+    });
+  };
 
   useEffect(() => {
     // 1. Fetch tracks
@@ -78,7 +106,34 @@ export default function App() {
         }
       })
       .catch(err => console.error("Error loading messages from server:", err));
+
+    // 4. Fetch settings (colors)
+    apiFetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.colors) {
+          setSiteColors(data.colors);
+          applyColors(data.colors);
+        }
+      })
+      .catch(err => console.error("Error loading settings from server:", err));
   }, []);
+
+  const handleUpdateColors = async (newColors: Record<string, string>) => {
+    setSiteColors(newColors);
+    applyColors(newColors);
+    try {
+      await apiFetch('/api/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ colors: newColors })
+      });
+    } catch (err) {
+      console.error("Error saving settings to server:", err);
+    }
+  };
 
   const handleAddTrack = async (newTrack: Track) => {
     try {
@@ -187,7 +242,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0a0a0a] text-[#e0e0e0] font-sans grainy-bg overflow-hidden relative">
+    <div 
+      className="min-h-screen flex flex-col bg-site-bg text-site-text-secondary font-sans grainy-bg overflow-hidden relative"
+      style={{ backgroundColor: 'var(--site-bg)', color: 'var(--site-text-secondary)' }}
+    >
       
       {/* Absolute Decorative Ambient Lights - Elegant Dark Theme */}
       <div className="absolute top-[-100px] left-[-100px] w-[400px] h-[400px] bg-[#c9a050] rounded-full blur-[120px] opacity-10 pointer-events-none" />
@@ -287,6 +345,20 @@ export default function App() {
         </motion.button>
       )}
 
+      {/* Floating Language Switcher button */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        onClick={toggleLanguage}
+        className="fixed bottom-20 right-6 md:bottom-6 md:right-20 z-40 bg-gradient-to-r from-[#1d2327] to-[#2c3338] hover:from-[#2c3338] hover:to-[#1d2327] text-gold-400 hover:text-gold-300 border border-gold-400/30 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.5)] flex items-center justify-center cursor-pointer transition-all active:scale-95 group font-sans text-xs font-bold"
+        title={language === 'fa' ? 'Switch to English' : 'تغییر به زبان فارسی'}
+      >
+        <div className="flex flex-col items-center justify-center leading-none">
+          <Globe className="w-3.5 h-3.5 md:w-4 md:h-4 mb-0.5 text-gold-400 group-hover:text-gold-300" />
+          <span className="text-[8px] md:text-[9px] uppercase tracking-wider">{language === 'fa' ? 'EN' : 'FA'}</span>
+        </div>
+      </motion.button>
+
       {/* Back to Top button */}
       <AnimatePresence>
         {showScrollTop && (
@@ -318,6 +390,8 @@ export default function App() {
             allTracks={allTracks}
             onAddTrack={handleAddTrack}
             onDeleteTrack={handleDeleteTrack}
+            siteColors={siteColors}
+            onUpdateColors={handleUpdateColors}
           />
         )}
       </AnimatePresence>

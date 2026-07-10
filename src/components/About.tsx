@@ -40,7 +40,10 @@ export default function About() {
           </div>
 
           {/* Social Links Panel */}
-          <div className="bg-[#110f0c] border border-gold-400/15 p-6 rounded-2xl relative overflow-hidden box-glow">
+          <div 
+            className="bg-site-surface border border-gold-400/15 p-6 rounded-2xl relative overflow-hidden box-glow"
+            style={{ backgroundColor: 'var(--site-surface)' }}
+          >
             <div className="absolute top-0 left-0 w-24 h-24 bg-gold-400/5 rounded-full blur-2xl pointer-events-none" />
             
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -116,11 +119,17 @@ export default function About() {
               {kianourProfile.education.map((edu, i) => (
                 <div key={i} className="relative">
                   {/* Timeline dot */}
-                  <span className={`absolute ${isRtl ? '-right-[31px]' : '-left-[31px]'} top-1.5 w-4 h-4 rounded-full bg-[#0d0c0a] border-2 border-gold-400 flex items-center justify-center`}>
+                  <span 
+                    className={`absolute ${isRtl ? '-right-[31px]' : '-left-[31px]'} top-1.5 w-4 h-4 rounded-full bg-site-bg border-2 border-gold-400 flex items-center justify-center`}
+                    style={{ backgroundColor: 'var(--site-bg)' }}
+                  >
                     <span className="w-1.5 h-1.5 rounded-full bg-gold-400" />
                   </span>
                   
-                  <div className="bg-[#12100e] border border-gold-400/10 p-4 rounded-xl box-glow">
+                  <div 
+                    className="bg-site-surface border border-gold-400/10 p-4 rounded-xl box-glow"
+                    style={{ backgroundColor: 'var(--site-surface)' }}
+                  >
                     <div className="flex justify-between items-start gap-4">
                       <h4 className="text-sm font-bold text-white font-sans">
                         {language === 'fa' ? edu.degree : edu.degreeEn}
@@ -172,7 +181,10 @@ export default function About() {
           </div>
 
           {/* Musical Styles Showcase */}
-          <div className="bg-[#110f0c] border border-gold-400/15 p-6 rounded-2xl relative overflow-hidden">
+          <div 
+            className="bg-site-surface border border-gold-400/15 p-6 rounded-2xl relative overflow-hidden"
+            style={{ backgroundColor: 'var(--site-surface)' }}
+          >
             <div className="absolute top-0 left-0 w-20 h-20 bg-gold-500/5 rounded-full blur-2xl pointer-events-none" />
             <h3 className="text-md font-sans font-bold text-gold-400 mb-5 flex items-center gap-2">
               <Disc className="w-5 h-5 text-gold-400 animate-spin-slow" />
@@ -205,7 +217,8 @@ export default function About() {
               {achievements.map((item, i) => (
                 <div 
                   key={i} 
-                  className="p-4 rounded-xl border border-gold-400/10 bg-[#12100e] hover:border-gold-400/35 transition-all flex gap-3"
+                  className="p-4 rounded-xl border border-gold-400/10 bg-site-surface hover:border-gold-400/35 transition-all flex gap-3"
+                  style={{ backgroundColor: 'var(--site-surface)' }}
                 >
                   <div className="w-10 h-10 rounded-lg bg-gold-400/10 border border-gold-400/25 flex items-center justify-center text-gold-400 flex-shrink-0">
                     <Music className="w-4 h-4" />

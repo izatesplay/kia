@@ -33,7 +33,10 @@ export default function Header({
   return (
     <header className="sticky top-0 z-50 w-full" id="site-header" dir={isRtl ? 'rtl' : 'ltr'}>
       {/* Main Public Header */}
-      <nav className="bg-[#0f0e0c]/95 backdrop-blur-md border-b-2 border-gold-400/20 shadow-lg px-4 py-3 md:px-8">
+      <nav 
+        className="bg-site-navbar/95 backdrop-blur-md border-b-2 border-gold-400/20 shadow-lg px-4 py-3 md:px-8"
+        style={{ backgroundColor: 'var(--site-navbar)' }}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
           {/* Logo / Title */}
@@ -158,7 +161,8 @@ export default function Header({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-[#0f0e0c] border-b-2 border-gold-400/30 overflow-hidden font-sans shadow-xl"
+            className="md:hidden bg-site-navbar border-b-2 border-gold-400/30 overflow-hidden font-sans shadow-xl"
+            style={{ backgroundColor: 'var(--site-navbar)' }}
           >
             <div className="px-4 py-3 space-y-2 flex flex-col">
               {menuItems.map((item) => {
