@@ -30,3 +30,14 @@ export interface Achievement {
   description: string;
   descriptionEn?: string;
 }
+
+export interface GalleryItem {
+  id: string;
+  title?: string;
+  titleEn?: string;
+  imageUrl: string;
+  description?: string;
+  descriptionEn?: string;
+  createdAt?: string;
+}
+

@@ -83,8 +83,8 @@ export default function Contact({ onAddMessage }: ContactProps) {
                 </div>
                 <div>
                   <span className="text-[10px] text-gray-500 block">{t('emailLabel')}</span>
-                  <a href="mailto:kianour.partovi@example.com" className="text-xs text-gray-300 hover:text-gold-400 transition-colors">
-                    kianour.partovi@example.com
+                  <a href="mailto:kianourpartovi@gmail.com" className="text-xs text-gray-300 hover:text-gold-400 transition-colors">
+                    kianourpartovi@gmail.com
                   </a>
                 </div>
               </div>
@@ -95,8 +95,8 @@ export default function Contact({ onAddMessage }: ContactProps) {
                 </div>
                 <div>
                   <span className="text-[10px] text-gray-500 block">{t('phoneLabel')}</span>
-                  <a href="tel:+982188888888" className="text-xs text-gray-300 hover:text-gold-400 transition-colors" dir="ltr">
-                    +98 21 8888 8888
+                  <a href="tel:+989396460464" className="text-xs text-gray-300 hover:text-gold-400 transition-colors" dir="ltr">
+                    +98 939 646 0464
                   </a>
                 </div>
               </div>

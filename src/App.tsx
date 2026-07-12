@@ -4,10 +4,11 @@ import { Volume2, Music as MusicIcon, Disc, Star, ExternalLink, Mail, ArrowUp, G
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Music from './components/Music';
+import Gallery from './components/Gallery';
 import About from './components/About';
 import Contact from './components/Contact';
 import AdminPanel from './components/AdminPanel';
-import { ContactMessage, Track } from './types';
+import { ContactMessage, Track, GalleryItem } from './types';
 import { kianourProfile, tracks as defaultTracks } from './data';
 import { apiFetch } from './apiHelper';
 import { useLanguage } from './lib/LanguageContext';
@@ -46,6 +47,9 @@ export default function App() {
 
   // Loaded tracks from server
   const [allTracks, setAllTracks] = useState<Track[]>(defaultTracks);
+
+  // Loaded gallery items from server
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
 
   // Loaded custom colors settings from server
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
@@ -132,6 +136,16 @@ export default function App() {
         }
       })
       .catch(err => console.error("Error loading settings from server:", err));
+
+    // 5. Fetch gallery items
+    apiFetch('/api/gallery')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setGalleryItems(data);
+        }
+      })
+      .catch(err => console.error("Error loading gallery from server:", err));
   }, []);
 
   const handleUpdateContent = async (newContent: any) => {
@@ -207,6 +221,40 @@ export default function App() {
     } catch (err) {
       console.error("Error deleting track from server:", err);
       alert(language === 'fa' ? "خطا در حذف موزیک از سرور" : "Error deleting music from server");
+    }
+  };
+
+  const handleAddGalleryItem = async (newItem: GalleryItem) => {
+    try {
+      const res = await apiFetch('/api/gallery', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newItem)
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.gallery)) {
+        setGalleryItems(data.gallery);
+      }
+    } catch (err) {
+      console.error("Error adding gallery item:", err);
+      alert(language === 'fa' ? "خطا در افزودن تصویر به گالری" : "Error adding image to gallery");
+    }
+  };
+
+  const handleDeleteGalleryItem = async (id: string) => {
+    try {
+      const res = await apiFetch(`/api/gallery/${id}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.gallery)) {
+        setGalleryItems(data.gallery);
+      }
+    } catch (err) {
+      console.error("Error deleting gallery item:", err);
+      alert(language === 'fa' ? "خطا در حذف تصویر از گالری" : "Error deleting image from gallery");
     }
   };
 
@@ -313,10 +361,13 @@ export default function App() {
             transition={{ duration: 0.5, ease: 'easeInOut' }}
           >
             {activeSection === 'home' && (
-              <Hero onNavigateToSection={handleNavigateToSection} />
+              <Hero onNavigateToSection={handleNavigateToSection} siteContent={siteContent} />
             )}
             {activeSection === 'music' && (
               <Music ambientSound={ambientSound} allTracks={allTracks} />
+            )}
+            {activeSection === 'gallery' && (
+              <Gallery galleryItems={galleryItems} />
             )}
             {activeSection === 'about' && (
               <About siteContent={siteContent} />
@@ -431,6 +482,9 @@ export default function App() {
             allTracks={allTracks}
             onAddTrack={handleAddTrack}
             onDeleteTrack={handleDeleteTrack}
+            galleryItems={galleryItems}
+            onAddGalleryItem={handleAddGalleryItem}
+            onDeleteGalleryItem={handleDeleteGalleryItem}
             siteColors={siteColors}
             onUpdateColors={handleUpdateColors}
             siteContent={siteContent}

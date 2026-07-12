@@ -129,6 +129,36 @@ const DEFAULT_MESSAGES = [
 
 const DEFAULT_BIO = 'من کیانور پرتوی هستم؛ نوازنده گیتار، خواننده، آهنگساز، تنظیم‌کننده و تهیه‌کننده موسیقی با بیش از ۲۰ سال سابقه حرفه‌ای. در طول فعالیتم، بین دنیای ارکستر و فضای مدرن موسیقی پاپ و جز پل زده‌ام تا آثاری خلق کنم که هم از نظر فنی غنی باشند و هم از نظر احساسی تأثیرگذار. دارای مدرک کارشناسی موسیقی از دانشگاه موسیقی کنسرواتوار تهران و کارشناسی ارشد آهنگسازی کاربردی از دانشکده موسیقی تهران هستم و همچنین به عنوان مهندس صدا فعالیت می‌کنم.';
 
+const DEFAULT_GALLERY = [
+  {
+    id: 'g-1',
+    title: 'نوازندگی در استودیو نوستالژیا',
+    titleEn: 'Playing at Nostalgia Studio',
+    imageUrl: './assets/images/about_image_1_1783213310316.jpg',
+    description: 'تمرین و صدابرداری قطعات جدید جاز در استودیوی شخصی با تجهیزات آنالوگ قدیمی.',
+    descriptionEn: 'Rehearsing and recording new jazz tracks in the personal studio with vintage analog gear.',
+    createdAt: '۱۴۰۲/۱۰/۱۲'
+  },
+  {
+    id: 'g-2',
+    title: 'اجرای زنده تور تهران',
+    titleEn: 'Live Performance Tehran Tour',
+    imageUrl: './assets/images/about_image_2_1783213319351.jpg',
+    description: 'کنسرت دونوازی گیتار با همراهی ارکستر زهی در تالار وحدت تهران.',
+    descriptionEn: 'Guitar duet concert accompanied by the string orchestra at Vahdat Hall, Tehran.',
+    createdAt: '۱۴۰۲/۱۱/۰۵'
+  },
+  {
+    id: 'g-3',
+    title: 'تنظیم قطعه باران پاییز',
+    titleEn: 'Arranging Autumn Rain',
+    imageUrl: './assets/images/hero_image_1_1783213279475.jpg',
+    description: 'پشت صحنه تولید و تنظیم قطعه باران پاییز با استفاده از سازهای آکوستیک و الکترونیک.',
+    descriptionEn: 'Behind the scenes of producing and arranging Autumn Rain using acoustic and electronic instruments.',
+    createdAt: '۱۴۰۲/۱۲/۰۲'
+  }
+];
+
 // Helper to save base64 data to file
 function saveBase64File(base64DataUrl: string, prefix: string, extension: string): string | null {
   const matches = base64DataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
@@ -204,6 +234,18 @@ async function startServer() {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
 
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS gallery (
+          id VARCHAR(100) PRIMARY KEY,
+          title VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+          titleEn VARCHAR(255),
+          imageUrl VARCHAR(500) NOT NULL,
+          description TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+          descriptionEn TEXT,
+          createdAt VARCHAR(100)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+
       // Seed default tracks if empty
       const [existingTracks]: any = await connection.query('SELECT COUNT(*) as count FROM tracks');
       if (existingTracks[0].count === 0) {
@@ -242,6 +284,18 @@ async function startServer() {
         console.log('Default settings seeded to MySQL.');
       }
 
+      // Seed default gallery if empty
+      const [existingGallery]: any = await connection.query('SELECT COUNT(*) as count FROM gallery');
+      if (existingGallery[0].count === 0) {
+        for (const item of DEFAULT_GALLERY) {
+          await connection.query(
+            'INSERT INTO gallery (id, title, titleEn, imageUrl, description, descriptionEn, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [item.id, item.title, item.titleEn, item.imageUrl, item.description, item.descriptionEn, item.createdAt]
+          );
+        }
+        console.log('Default gallery seeded to MySQL.');
+      }
+
       connection.release();
     } catch (err) {
       console.error('MySQL database initialization failed, falling back to local JSON files:', err);
@@ -259,10 +313,14 @@ async function startServer() {
   const messagesFile = path.join(uploadsDir, 'messages.json');
   const bioFile = path.join(uploadsDir, 'bio.txt');
   const settingsFile = path.join(uploadsDir, 'settings.json');
+  const galleryFile = path.join(uploadsDir, 'gallery.json');
 
   // Initialize files with default data if not existing
   if (!fs.existsSync(tracksFile)) {
     fs.writeFileSync(tracksFile, JSON.stringify(DEFAULT_TRACKS, null, 2), 'utf8');
+  }
+  if (!fs.existsSync(galleryFile)) {
+    fs.writeFileSync(galleryFile, JSON.stringify(DEFAULT_GALLERY, null, 2), 'utf8');
   }
   if (!fs.existsSync(messagesFile)) {
     fs.writeFileSync(messagesFile, JSON.stringify(DEFAULT_MESSAGES, null, 2), 'utf8');
@@ -452,6 +510,149 @@ async function startServer() {
     } catch (error) {
       console.error('Error deleting track:', error);
       res.status(500).json({ error: 'Failed to delete track' });
+    }
+  });
+
+  // GET gallery
+  app.get('/api/gallery', async (req, res) => {
+    try {
+      if (dbPool) {
+        try {
+          const [rows]: any = await dbPool.query('SELECT * FROM gallery');
+          return res.json(rows);
+        } catch (dbErr) {
+          console.warn('MySQL GET gallery failed, falling back to local JSON:', dbErr);
+        }
+      }
+      if (fs.existsSync(galleryFile)) {
+        const data = fs.readFileSync(galleryFile, 'utf8');
+        return res.json(JSON.parse(data));
+      }
+      res.json(DEFAULT_GALLERY);
+    } catch (e) {
+      console.error(e);
+      res.json(DEFAULT_GALLERY);
+    }
+  });
+
+  // POST gallery (Add)
+  app.post('/api/gallery', async (req, res) => {
+    try {
+      const { title, titleEn, imageUrl, description, descriptionEn } = req.body;
+
+      if (!imageUrl) {
+        return res.status(400).json({ error: 'Image is required' });
+      }
+
+      let savedImageUrl = imageUrl;
+      if (imageUrl.startsWith('data:')) {
+        const saved = saveBase64File(imageUrl, 'gallery_item', 'jpg');
+        if (saved) savedImageUrl = saved;
+      }
+
+      const newGalleryItem = {
+        id: `g-custom-${Date.now()}`,
+        title: title ? title.trim() : 'تصویر جدید',
+        titleEn: titleEn ? titleEn.trim() : 'New Image',
+        imageUrl: savedImageUrl,
+        description: description ? description.trim() : '',
+        descriptionEn: descriptionEn ? descriptionEn.trim() : '',
+        createdAt: new Intl.DateTimeFormat('fa-IR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).format(new Date())
+      };
+
+      if (dbPool) {
+        try {
+          await dbPool.query(
+            'INSERT INTO gallery (id, title, titleEn, imageUrl, description, descriptionEn, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [newGalleryItem.id, newGalleryItem.title, newGalleryItem.titleEn, newGalleryItem.imageUrl, newGalleryItem.description, newGalleryItem.descriptionEn, newGalleryItem.createdAt]
+          );
+          const [rows]: any = await dbPool.query('SELECT * FROM gallery');
+          return res.json({ success: true, gallery: rows });
+        } catch (dbErr) {
+          console.warn('MySQL INSERT gallery failed, falling back to local JSON:', dbErr);
+        }
+      }
+
+      let gallery = [];
+      if (fs.existsSync(galleryFile)) {
+        gallery = JSON.parse(fs.readFileSync(galleryFile, 'utf8'));
+      } else {
+        gallery = [...DEFAULT_GALLERY];
+      }
+
+      gallery.push(newGalleryItem);
+      fs.writeFileSync(galleryFile, JSON.stringify(gallery, null, 2), 'utf8');
+      res.json({ success: true, gallery });
+    } catch (error) {
+      console.error('Error adding gallery item:', error);
+      res.status(500).json({ error: 'Failed to add gallery item' });
+    }
+  });
+
+  // DELETE gallery
+  app.delete('/api/gallery/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      let imageUrlToDelete = '';
+
+      if (dbPool) {
+        try {
+          const [rows]: any = await dbPool.query('SELECT imageUrl FROM gallery WHERE id = ?', [id]);
+          if (rows.length > 0) {
+            imageUrlToDelete = rows[0].imageUrl;
+          }
+        } catch (dbErr) {
+          console.warn('MySQL SELECT before delete failed, falling back to local JSON:', dbErr);
+        }
+      }
+      
+      if (!imageUrlToDelete) {
+        let gallery = [];
+        if (fs.existsSync(galleryFile)) {
+          gallery = JSON.parse(fs.readFileSync(galleryFile, 'utf8'));
+        } else {
+          gallery = [...DEFAULT_GALLERY];
+        }
+        const itemToDelete = gallery.find((g: any) => g.id === id);
+        if (itemToDelete) {
+          imageUrlToDelete = itemToDelete.imageUrl;
+        }
+      }
+
+      if (imageUrlToDelete && imageUrlToDelete.startsWith('/uploads/')) {
+        const imagePath = path.join(process.cwd(), 'public', imageUrlToDelete);
+        if (fs.existsSync(imagePath)) {
+          try { fs.unlinkSync(imagePath); } catch (e) { console.error(e); }
+        }
+      }
+
+      if (dbPool) {
+        try {
+          await dbPool.query('DELETE FROM gallery WHERE id = ?', [id]);
+          const [rows]: any = await dbPool.query('SELECT * FROM gallery');
+          return res.json({ success: true, gallery: rows });
+        } catch (dbErr) {
+          console.warn('MySQL DELETE gallery failed, falling back to local JSON:', dbErr);
+        }
+      }
+
+      let gallery = [];
+      if (fs.existsSync(galleryFile)) {
+        gallery = JSON.parse(fs.readFileSync(galleryFile, 'utf8'));
+      } else {
+        gallery = [...DEFAULT_GALLERY];
+      }
+
+      gallery = gallery.filter((g: any) => g.id !== id);
+      fs.writeFileSync(galleryFile, JSON.stringify(gallery, null, 2), 'utf8');
+      res.json({ success: true, gallery });
+    } catch (error) {
+      console.error('Error deleting gallery item:', error);
+      res.status(500).json({ error: 'Failed to delete gallery item' });
     }
   });
 

@@ -128,35 +128,35 @@ export const tracks: Track[] = [
 
 export const achievements: Achievement[] = [
   {
-    year: '۱۴۰۲',
-    yearEn: '2023',
-    title: 'کنسرت بزرگ ارکسترال جاز-پاپ تهران',
-    titleEn: 'Grand Tehran Jazz-Pop Orchestral Concert',
-    description: 'رهبری ارکستر، نوازندگی گیتار لید و آهنگسازی رپرتوار ارکسترال جاز پاپ با حضور بیش از ۳۰ نوازنده در تالار وحدت.',
-    descriptionEn: 'Orchestra conducting, lead guitar performance, and composing an orchestral jazz-pop repertoire with over 30 musicians at Vahdat Hall.'
-  },
-  {
-    year: '۱۳۹۹',
-    yearEn: '2020',
-    title: 'تندیس بهترین آلبوم موسیقی تلفیقی سال',
-    titleEn: 'Best Fusion Music Album of the Year Statue',
-    description: 'دریافت جایزه معتبر موسیقی کشور برای آلبوم «طنین باران پاییزی» به عنوان بهترین آهنگسازی و صدابرداری سال.',
-    descriptionEn: 'Receiving the country\'s prestigious music award for the album "Autumn Rain Echoes" for best composition and audio engineering.'
-  },
-  {
-    year: '۱۳۹۷',
-    yearEn: '2018',
-    title: 'تأسیس استودیو صدابرداری نوستالژیا',
-    titleEn: 'Establishment of Nostalgia Recording Studio',
-    description: 'راه‌اندازی یکی از مجهزترین استودیوهای آنالوگ برای ضبط آثار جاز و پاپ با رویکرد حفظ اصالت صداهای نوستالژیک دهه ۷۰ و ۸۰.',
-    descriptionEn: 'Setting up one of the best-equipped analog studios for jazz and pop recording, with an approach to preserve the sound authenticity of the 70s and 80s.'
-  },
-  {
-    year: '۱۳۹۴',
-    yearEn: '2015',
+    year: '...',
+    yearEn: '...',
     title: 'همکاری‌های خلاقانه بین‌المللی',
     titleEn: 'Creative International Collaborations',
-    description: 'تولید و تنظیم بیش از ۵۰ تک‌آهنگ با هنرمندان سبک‌های مختلف در کشورهای خاورمیانه و اروپا با رویکرد فیوژن جاز-ایرانی.',
-    descriptionEn: 'Producing and arranging over 50 singles with artists from different styles across Europe and the Middle East, with a focus on Persian-Jazz Fusion.'
+    description: 'تولید و تنظیم بیش از ۳۰ تک‌آهنگ با هنرمندان سبک‌های مختلف در کشورهای خاورمیانه و اروپا با رویکرد فیوژن جاز-ایرانی.',
+    descriptionEn: 'Producing and arranging over 30 singles with artists from different styles across Europe and the Middle East, with a focus on Persian-Jazz Fusion.'
+  },
+  {
+    year: '۱۳۸۷ - ۱۳۹۸',
+    yearEn: '2008 - 2019',
+    title: 'سولیست خواننده تنور:',
+    titleEn: 'Tenor Soloist:',
+    description: 'سولیست تنور اپرا در ارکستر سمفونی تهران، ارکستر مجلسی کنسرواتوار تهران و ارکسترهای مجلسی و ...',
+    descriptionEn: 'Opera Tenor Soloist in the Tehran Symphony Orchestra, Tehran Conservatory Chamber Orchestra, and chamber orchestras and ...'
+  },
+  {
+    year: '...',
+    yearEn: '...',
+    title: 'اجراهای زنده:',
+    titleEn: 'Live performances:',
+    description: 'گیتاریست، خواننده، بک وکال و رهبر ارکستر در بندهای موسیقی متفاوت.',
+    descriptionEn: 'Guitarist, Singer, Backing Vocalist and bandleader in different musical bands.'
+  },
+  {
+    year: '۱۳۸۹',
+    yearEn: '2010',
+    title: 'فستیوال موسیقی:',
+    titleEn: 'Music Festival:',
+    description: 'عنوان بهترین نوازنده و خواننده فستیوال بلوز',
+    descriptionEn: 'Best Musician and Singer at the Blues Festival.'
   }
 ];

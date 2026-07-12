@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Music, User, Mail, Home, Settings, Eye, ChevronDown, Award, Volume2, VolumeX, Terminal, Globe } from 'lucide-react';
+import { Music, User, Mail, Home, Settings, Eye, ChevronDown, Award, Volume2, VolumeX, Terminal, Globe, Image } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../lib/LanguageContext';
 
@@ -26,6 +26,7 @@ export default function Header({
   const menuItems = [
     { id: 'home', label: t('home'), icon: Home },
     { id: 'music', label: t('music'), icon: Music },
+    { id: 'gallery', label: t('gallery'), icon: Image },
     { id: 'about', label: t('about'), icon: User },
     { id: 'contact', label: t('contact'), icon: Mail },
   ];

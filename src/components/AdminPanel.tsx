@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, Inbox, Settings, Check, Trash2, Save, 
   Disc, FileText, Terminal, RefreshCw, Star, 
-  Upload, Music, PlusCircle, Lock, User, AlertCircle
+  Upload, Music, PlusCircle, Lock, User, AlertCircle,
+  Image as ImageIcon
 } from 'lucide-react';
-import { ContactMessage, Track } from '../types';
+import { ContactMessage, Track, GalleryItem } from '../types';
 import { apiFetch } from '../apiHelper';
 import { useLanguage } from '../lib/LanguageContext';
 
@@ -21,6 +22,9 @@ interface AdminPanelProps {
   allTracks: Track[];
   onAddTrack: (track: Track) => void;
   onDeleteTrack: (id: string) => void;
+  galleryItems: GalleryItem[];
+  onAddGalleryItem: (item: GalleryItem) => void;
+  onDeleteGalleryItem: (id: string) => void;
   siteColors?: Record<string, string>;
   onUpdateColors?: (colors: Record<string, string>) => void;
   siteContent?: any;
@@ -130,6 +134,9 @@ export default function AdminPanel({
   allTracks,
   onAddTrack,
   onDeleteTrack,
+  galleryItems,
+  onAddGalleryItem,
+  onDeleteGalleryItem,
   siteColors = {},
   onUpdateColors,
   siteContent,
@@ -137,14 +144,16 @@ export default function AdminPanel({
 }: AdminPanelProps) {
   const { language, isRtl, t } = useLanguage();
 
-  // Tabs: inbox, edit-bio, content-cms, upload-music, settings
-  const [activeTab, setActiveTab] = useState<'inbox' | 'edit-bio' | 'content-cms' | 'upload-music' | 'settings'>('inbox');
+  // Tabs: inbox, edit-bio, content-cms, upload-music, settings, gallery-cms
+  const [activeTab, setActiveTab] = useState<'inbox' | 'edit-bio' | 'content-cms' | 'upload-music' | 'gallery-cms' | 'settings'>('inbox');
   const [editedBio, setEditedBio] = useState(bioContent);
   const [isSaved, setIsSaved] = useState(false);
 
   // Bilingual bio states
   const [bioP1Fa, setBioP1Fa] = useState('');
+  const [bioP11Fa, setBioP11Fa] = useState('');
   const [bioP1En, setBioP1En] = useState('');
+  const [bioP11En, setBioP11En] = useState('');
   const [bioP2Fa, setBioP2Fa] = useState('');
   const [bioP2En, setBioP2En] = useState('');
 
@@ -163,14 +172,18 @@ export default function AdminPanel({
     if (siteContent) {
       if (siteContent.translations) {
         setBioP1Fa(siteContent.translations.aboutBioP1 || '');
+        setBioP11Fa(siteContent.translations.aboutBioP11 || '');
         setBioP1En(siteContent.translations.aboutBioP1En || '');
+        setBioP11En(siteContent.translations.aboutBioP11En || '');
         setBioP2Fa(siteContent.translations.aboutBioP2 || '');
         setBioP2En(siteContent.translations.aboutBioP2En || '');
       } else {
-        setBioP1Fa('موسیقی جاز و سبک‌های مشتق از آن مانند اسموت جاز، آر‌اند‌بی و فانک، به من یاد داده‌اند که چطور در ساختاری به غایت مهندسی‌شده و بر پایه‌ی قوانین پیچیده‌ی هارمونی، رهایی عمیق را تجربه کنم. در ساخته‌هایم همواره تلاش دارم پلی بین فضای ارکسترال کلاسیک و ساختارهای نو پاپ ایجاد کنم تا صدا برای شنونده‌ی حقیقت‌جو غنی و تامل‌برانگیز باشد.');
-        setBioP1En('Jazz and its derivative genres like smooth jazz, R&B, and funk have taught me how to experience deep freedom within a highly engineered structure based on complex rules of harmony. In my compositions, I always strive to bridge the classical orchestral space and modern pop structures to create a sound that is both intellectually rich and emotionally touching.');
-        setBioP2Fa('به عنوان یک مهندس صدا معتقدم اصالت صدای آنالوگ - با تمام خش‌خش‌های شیرین و گرمای منحصربه‌فردش - جادویی دارد که هرگز در دنیای سرد دیجیتال شبیه‌سازی نخواهد شد. از این رو، در استودیوی شخصی‌ام همواره تلاش می‌کنم رنگ صوتی و بافت زنده و نوستالژیک را در کارنامه هنری‌ام حفظ کنم.');
-        setBioP2En('As a sound engineer, I believe that the authenticity of analog sound—with all its delightful crackles and unique warmth—has a magic that can never be replicated in the cold digital world. That is why in my personal studio, I always try to preserve this signature sound and nostalgic organic texture in my works.');
+        setBioP1Fa('موسیقی جاز و ژانرهای مشتق شده از آن مانند جاز نرم، فانک، سول، آر اند بی به من آموخته‌اند که چگونه آزادی عمیقی را در ساختاری بسیار مهندسی شده و مبتنی بر قوانین پیچیده هارمونی تجربه کنم.در آهنگسازی‌هایم، همیشه تلاش می‌کنم تا پلی بین فضای ارکستر کلاسیک و ساختارهای پاپ مدرن ایجاد کنم تا صدایی خلق کنم که هم از نظر فکری غنی و هم از نظر احساسی تأثیرگذار باشد.');
+        setBioP11Fa('درود، من کیانور پرتوی هستم؛ گیتاریست، موزیک پرودیوسر، خواننده، آهنگساز، تنظیم‌کننده، مهندس صدا و رهبر ارکستر با بیش از ۲۰ سال تجربه حرفه‌ای در صنعت موسیقی، تمرکز اصلی من بر خلق، اجرا و تولید موسیقی است. در طول سال‌ها با هنرمندان مختلف در پروژه‌های استودیویی، اجراهای زنده و تولید آثار موسیقی همکاری کرده‌ام و همواره تلاش کرده‌ام کیفیت هنری و فنی را در بالاترین سطح ارائه دهم.');
+        setBioP1En('Jazz and its derivative genres like Smooth Jazz, Funk, Soul, R&B have taught me how to experience deep freedom within a highly engineered structure based on complex rules of harmoony. In my compositions, I always strive to bridge the classical orchestral space and modern pop structures to create a sound that is both intellectually rich and emotionally touching.');
+        setBioP11En('Hello, I am Kianour Partovi; a guitarist, music producer, singer, composer, arranger, sound engineer and conductor with over 20 years of professional experience in the music industry. My main focus is on creating, performing and producing music. Over the years, I have collaborated with various artists on studio projects, live performances and musical productions, and I have always strived to provide the highest level of artistic and technical quality.');
+        setBioP2Fa('موسیقی برای من تنها یک حرفه نیست؛ بلکه راهی برای خلق احساس، روایت داستان و برقراری ارتباطی ماندگار با مخاطب است.');
+        setBioP2En('Music is not just a profession for me; it is a way to create emotion, tell a story and establish a lasting connection with the audience.');
       }
       if (siteContent.equipment) {
         setEquipmentInput(JSON.parse(JSON.stringify(siteContent.equipment)));
@@ -275,7 +288,9 @@ export default function AdminPanel({
       const updatedTranslations = {
         ...currentTranslations,
         aboutBioP1: bioP1Fa,
+        aboutBioP11: bioP11Fa,
         aboutBioP1En: bioP1En,
+        aboutBioP11En: bioP11En,
         aboutBioP2: bioP2Fa,
         aboutBioP2En: bioP2En,
       };
@@ -385,6 +400,84 @@ export default function AdminPanel({
   // File Input Refs
   const audioInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+
+  // Gallery Upload States
+  const [galleryTitle, setGalleryTitle] = useState('');
+  const [galleryTitleEn, setGalleryTitleEn] = useState('');
+  const [galleryDesc, setGalleryDesc] = useState('');
+  const [galleryDescEn, setGalleryDescEn] = useState('');
+  const [isGalleryUploading, setIsGalleryUploading] = useState(false);
+  const [galleryUploadSuccess, setGalleryUploadSuccess] = useState(false);
+  const galleryImageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleGalleryUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const imageFileInput = galleryImageInputRef.current?.files?.[0];
+
+    if (!imageFileInput) {
+      alert(language === 'fa' ? 'لطفاً یک تصویر برای گالری انتخاب کنید.' : 'Please select an image for the gallery.');
+      return;
+    }
+
+    setIsGalleryUploading(true);
+
+    try {
+      // 1. Upload image file via standard FormData stream
+      const imageFormData = new FormData();
+      imageFormData.append('file', imageFileInput);
+
+      const imageUploadRes = await apiFetch('/api/upload', {
+        method: 'POST',
+        body: imageFormData
+      });
+
+      if (!imageUploadRes.ok) {
+        throw new Error('Failed to upload image file');
+      }
+
+      const imageUploadData = await imageUploadRes.json();
+      if (!imageUploadData.success || !imageUploadData.url) {
+        throw new Error('Invalid image upload response');
+      }
+
+      const finalImageUrl = imageUploadData.url;
+
+      // 2. Construct clean metadata and invoke onAddGalleryItem to save it permanently
+      const newGalleryItem: GalleryItem = {
+        id: `g-custom-${Date.now()}`,
+        title: galleryTitle.trim() || (language === 'fa' ? 'تصویر جدید' : 'New Image'),
+        titleEn: galleryTitleEn.trim() || 'New Image',
+        imageUrl: finalImageUrl,
+        description: galleryDesc.trim(),
+        descriptionEn: galleryDescEn.trim(),
+        createdAt: new Intl.DateTimeFormat('fa-IR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).format(new Date())
+      };
+
+      await onAddGalleryItem(newGalleryItem);
+      setIsGalleryUploading(false);
+      setGalleryUploadSuccess(true);
+
+      // Reset Form
+      setGalleryTitle('');
+      setGalleryTitleEn('');
+      setGalleryDesc('');
+      setGalleryDescEn('');
+      if (galleryImageInputRef.current) galleryImageInputRef.current.value = '';
+
+      setTimeout(() => setGalleryUploadSuccess(false), 4000);
+    } catch (err) {
+      console.error(err);
+      alert(language === 'fa'
+        ? 'خطا در بارگذاری تصویر روی سرور. لطفاً مجدداً تلاش کنید.'
+        : 'Error uploading image to server. Please try again.'
+      );
+      setIsGalleryUploading(false);
+    }
+  };
 
   // Login handler
   const handleLogin = (e: React.FormEvent) => {
@@ -694,6 +787,18 @@ export default function AdminPanel({
               </button>
 
               <button
+                onClick={() => setActiveTab('gallery-cms')}
+                className={`px-4 py-3 text-[11px] font-bold border-b-2 flex items-center gap-1.5 cursor-pointer transition-colors ${
+                  activeTab === 'gallery-cms' 
+                    ? 'border-gold-400 text-gold-400 bg-[#2c3338]/40' 
+                    : 'border-transparent text-gray-400 hover:text-gold-400'
+                }`}
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>{language === 'fa' ? `گالری (${galleryItems?.length || 0})` : `Gallery (${galleryItems?.length || 0})`}</span>
+              </button>
+
+              <button
                 onClick={() => setActiveTab('settings')}
                 className={`px-4 py-3 text-[11px] font-bold border-b-2 flex items-center gap-1.5 cursor-pointer transition-colors ${
                   activeTab === 'settings' 
@@ -811,11 +916,40 @@ export default function AdminPanel({
                         />
                       </div>
 
+                      {/* Paragraph 1.1 - Persian */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-gold-400 flex items-center gap-1.5 justify-start">
+                          <span className="w-2 h-2 rounded-full bg-gold-400" />
+                          <span>{language === 'fa' ? 'پاراگراف دوم بیوگرافی - معرفی تخصص‌ها (فارسی)' : 'Biography Paragraph 1.1 - Expertise Intro (Persian)'}</span>
+                        </label>
+                        <textarea
+                          rows={4}
+                          value={bioP11Fa}
+                          onChange={(e) => setBioP11Fa(e.target.value)}
+                          className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-3.5 text-xs leading-relaxed text-gray-200 focus:outline-none focus:border-gold-400 resize-none font-sans"
+                        />
+                      </div>
+
+                      {/* Paragraph 1.1 - English */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-gold-400 flex items-center gap-1.5 justify-start">
+                          <span className="w-2 h-2 rounded-full bg-gold-400" />
+                          <span>{language === 'fa' ? 'پاراگراف دوم بیوگرافی - معرفی تخصص‌ها (انگلیسی)' : 'Biography Paragraph 1.1 - Expertise Intro (English)'}</span>
+                        </label>
+                        <textarea
+                          rows={4}
+                          value={bioP11En}
+                          onChange={(e) => setBioP11En(e.target.value)}
+                          className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-3.5 text-xs leading-relaxed text-gray-200 focus:outline-none focus:border-gold-400 resize-none font-sans text-left"
+                          dir="ltr"
+                        />
+                      </div>
+
                       {/* Paragraph 2 - Persian */}
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-gold-400 flex items-center gap-1.5 justify-start">
                           <span className="w-2 h-2 rounded-full bg-gold-400" />
-                          <span>{language === 'fa' ? 'پاراگراف دوم بیوگرافی (فارسی)' : 'Biography Paragraph 2 (Persian)'}</span>
+                          <span>{language === 'fa' ? 'پاراگراف پایانی بیوگرافی (فارسی)' : 'Biography Final Paragraph (Persian)'}</span>
                         </label>
                         <textarea
                           rows={4}
@@ -829,7 +963,7 @@ export default function AdminPanel({
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-gold-400 flex items-center gap-1.5 justify-start">
                           <span className="w-2 h-2 rounded-full bg-gold-400" />
-                          <span>{language === 'fa' ? 'پاراگراف دوم بیوگرافی (انگلیسی)' : 'Biography Paragraph 2 (English)'}</span>
+                          <span>{language === 'fa' ? 'پاراگراف پایانی بیوگرافی (انگلیسی)' : 'Biography Final Paragraph (English)'}</span>
                         </label>
                         <textarea
                           rows={4}
@@ -1460,6 +1594,182 @@ export default function AdminPanel({
                         <RefreshCw className="w-3.5 h-3.5" />
                         <span>{language === 'fa' ? 'بازنشانی پیش‌فرض‌های سیستم' : 'Reset System Defaults'}</span>
                       </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* TAB 6: GALLERY CMS */}
+                {activeTab === 'gallery-cms' && (
+                  <motion.div
+                    key="gallery-cms-tab"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-6"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-[#f0f0f1]">{language === 'fa' ? 'مدیریت و آپلود تصاویر گالری' : 'Gallery List & Image Uploads'}</h3>
+                      <span className="text-[10px] text-gray-500">{language === 'fa' ? `مجموع تصاویر گالری: ${galleryItems?.length || 0} عکس` : `Total gallery images: ${galleryItems?.length || 0}`}</span>
+                    </div>
+
+                    {/* Form Block */}
+                    <form onSubmit={handleGalleryUpload} className={`bg-[#181818] border border-gold-400/10 rounded-2xl p-5 space-y-4 ${isRtl ? 'text-right' : 'text-left'} font-sans`}>
+                      <div className="flex items-center gap-2 pb-2 border-b border-gold-400/10">
+                        <PlusCircle className="w-4 h-4 text-gold-400" />
+                        <span className="text-xs font-bold text-white">{language === 'fa' ? 'آپلود تصویر جدید به گالری' : 'Upload New Gallery Image'}</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-gray-400">{language === 'fa' ? 'عنوان تصویر (فارسی)' : 'Image Title (Persian)'}</label>
+                          <input
+                            type="text"
+                            required
+                            value={galleryTitle}
+                            onChange={(e) => setGalleryTitle(e.target.value)}
+                            placeholder={language === 'fa' ? 'مانند: پشت صحنه کنسرت تهران' : 'e.g. Backstage Concert Tehran'}
+                            className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-2.5 text-xs text-gray-200 focus:outline-none focus:border-gold-400 font-sans"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-gray-400">{language === 'fa' ? 'عنوان انگلیسی (English Title)' : 'Image Title (English)'}</label>
+                          <input
+                            type="text"
+                            required
+                            value={galleryTitleEn}
+                            onChange={(e) => setGalleryTitleEn(e.target.value)}
+                            placeholder="e.g. Tehran Backstage Concert"
+                            className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-2.5 text-xs text-gray-200 focus:outline-none focus:border-gold-400 font-sans text-left"
+                            dir="ltr"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5 md:col-span-2">
+                          <label className="text-[11px] font-bold text-gray-400">{language === 'fa' ? 'توضیحات کوتاه تصویر (فارسی)' : 'Image Description (Persian)'}</label>
+                          <textarea
+                            rows={2}
+                            value={galleryDesc}
+                            onChange={(e) => setGalleryDesc(e.target.value)}
+                            placeholder={language === 'fa' ? 'توضیحاتی کوتاه در مورد این تصویر...' : 'Brief story or details about this shot...'}
+                            className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-2.5 text-xs text-gray-200 focus:outline-none focus:border-gold-400 font-sans resize-none"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5 md:col-span-2">
+                          <label className="text-[11px] font-bold text-gray-400">{language === 'fa' ? 'توضیحات انگلیسی (English Description)' : 'Image Description (English)'}</label>
+                          <textarea
+                            rows={2}
+                            value={galleryDescEn}
+                            onChange={(e) => setGalleryDescEn(e.target.value)}
+                            placeholder="e.g. Captured during the soundcheck session..."
+                            className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-2.5 text-xs text-gray-200 focus:outline-none focus:border-gold-400 font-sans resize-none text-left"
+                            dir="ltr"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5 md:col-span-2">
+                          <label className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
+                            <Upload className="w-3.5 h-3.5 text-gold-400" />
+                            <span>{language === 'fa' ? 'انتخاب تصویر (حداکثر حجم ۵ مگابایت)*' : 'Select Gallery Image (Max 5MB)*'}</span>
+                          </label>
+                          <input
+                            type="file"
+                            required
+                            ref={galleryImageInputRef}
+                            accept="image/*"
+                            className="w-full bg-[#111111] border border-[#2c3338] rounded-xl p-1.5 text-xs text-gray-400 file:bg-gold-500 file:text-black file:border-0 file:py-1 file:px-2.5 file:rounded-md file:text-[10px] file:font-bold file:cursor-pointer"
+                          />
+                        </div>
+                      </div>
+
+                      {galleryUploadSuccess && (
+                        <div className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2 justify-start font-sans">
+                          <Check className="w-4 h-4 text-emerald-400" />
+                          <span>{language === 'fa' ? 'تصویر جدید با موفقیت بارگذاری، ذخیره و در بخش «گالری» قرار گرفت!' : 'Image uploaded successfully! Added to the gallery screen.'}</span>
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={isGalleryUploading}
+                        className={`w-full py-3 bg-gold-500 hover:bg-gold-400 disabled:bg-gray-700 text-black font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow cursor-pointer transition-colors`}
+                      >
+                        {isGalleryUploading ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin text-black" />
+                            <span>{language === 'fa' ? 'در حال ذخیره‌سازی تصویر روی سرور...' : 'Uploading image file to server...'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 text-black" />
+                            <span>{language === 'fa' ? 'آپلود و ذخیره نهایی تصویر گالری' : 'Upload & Save Gallery Image'}</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
+
+                    {/* Uploaded List Block */}
+                    <div className={`space-y-3 font-sans ${isRtl ? 'text-right' : 'text-left'}`}>
+                      <span className="text-xs font-bold text-gray-400 block">
+                        {language === 'fa' ? 'لیست تمام تصاویر گالری (پیش‌فرض و سفارشی):' : 'All Images (Default & User Uploaded):'}
+                      </span>
+                      
+                      {!galleryItems || galleryItems.length === 0 ? (
+                        <div className="border border-dashed border-[#2c3338] rounded-xl p-6 text-center text-gray-500 text-xs">
+                          {language === 'fa' ? 'هیچ تصویری در گالری یافت نشد.' : 'No images found.'}
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {galleryItems.map((item) => {
+                            const isDefault = !item.id.toString().startsWith('g-custom-');
+                            return (
+                              <div 
+                                key={item.id}
+                                className="bg-[#2c3338]/10 border border-[#2c3338] rounded-xl p-3 flex items-center justify-between gap-4 hover:border-gold-400/25 transition-all"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-12 h-12 rounded bg-black border border-gold-400/10 overflow-hidden flex-shrink-0">
+                                    <img 
+                                      src={item.imageUrl} 
+                                      alt={item.title} 
+                                      className="w-full h-full object-cover" 
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  </div>
+                                  <div className={isRtl ? 'text-right' : 'text-left'}>
+                                    <div className="flex items-center gap-2">
+                                      <h4 className="text-xs font-bold text-white">{language === 'fa' ? item.title : (item.titleEn || item.title)}</h4>
+                                      {isDefault ? (
+                                        <span className="text-[8px] bg-blue-500/10 text-blue-300 border border-blue-500/20 px-1 py-0.2 rounded">
+                                          {language === 'fa' ? 'پیش‌فرض' : 'Default'}
+                                        </span>
+                                      ) : (
+                                        <span className="text-[8px] bg-gold-400/10 text-gold-300 border border-gold-400/20 px-1 py-0.2 rounded">
+                                          {language === 'fa' ? 'سفارشی' : 'Custom'}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">
+                                      {language === 'fa' ? item.description : (item.descriptionEn || item.description)}
+                                    </p>
+                                    <span className="text-[8px] text-gray-500 mt-0.5 block">{item.createdAt}</span>
+                                  </div>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => onDeleteGalleryItem(item.id)}
+                                  className="p-1.5 rounded text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer flex-shrink-0"
+                                  title={language === 'fa' ? 'حذف تصویر' : 'Delete Image'}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}

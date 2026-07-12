@@ -6,6 +6,7 @@ import { useLanguage } from '../lib/LanguageContext';
 
 interface HeroProps {
   onNavigateToSection: (section: string) => void;
+  siteContent?: any;
 }
 
 const heroImages = [
@@ -26,9 +27,13 @@ const heroImages = [
   }
 ];
 
-export default function Hero({ onNavigateToSection }: HeroProps) {
+export default function Hero({ onNavigateToSection, siteContent }: HeroProps) {
   const [activeImgIndex, setActiveImgIndex] = useState(0);
   const { language, isRtl, t } = useLanguage();
+
+  const bioP1 = language === 'fa' 
+    ? (siteContent?.translations?.aboutBioP1 || t('aboutBioP1'))
+    : (siteContent?.translations?.aboutBioP1En || t('aboutBioP1En') || t('aboutBioP1'));
 
   // Auto-slide every 4.5 seconds
   useEffect(() => {
@@ -78,7 +83,7 @@ export default function Hero({ onNavigateToSection }: HeroProps) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-gray-400 text-base leading-relaxed max-w-2xl font-light"
           >
-            {t('aboutBioP1')}
+            {bioP1}
           </motion.p>
 
           <motion.div

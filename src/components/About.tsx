@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Award, GraduationCap, Calendar, ShieldCheck, Heart, Radio, Disc, Music, Youtube, Instagram, Headphones } from 'lucide-react';
+import { Award, GraduationCap, Calendar, ShieldCheck, Heart, Radio, Disc, Music, Youtube, Instagram, Headphones, Apple } from 'lucide-react';
 import { kianourProfile, achievements } from '../data';
 import { useLanguage } from '../lib/LanguageContext';
 
@@ -90,6 +90,18 @@ export default function About({ siteContent }: AboutProps) {
 
   const equipmentData = siteContent?.equipment || DEFAULT_EQUIPMENT;
 
+  const bioP1 = language === 'fa' 
+    ? (siteContent?.translations?.aboutBioP1 || t('aboutBioP1'))
+    : (siteContent?.translations?.aboutBioP1En || t('aboutBioP1En') || t('aboutBioP1'));
+
+  const bioP11 = language === 'fa' 
+    ? (siteContent?.translations?.aboutBioP11 || t('aboutBioP11'))
+    : (siteContent?.translations?.aboutBioP11En || t('aboutBioP11En') || t('aboutBioP11'));
+
+  const bioP2 = language === 'fa' 
+    ? (siteContent?.translations?.aboutBioP2 || t('aboutBioP2'))
+    : (siteContent?.translations?.aboutBioP2En || t('aboutBioP2En') || t('aboutBioP2'));
+
   return (
     <section id="about" className="py-12 md:py-20 px-4 md:px-8 max-w-7xl mx-auto" dir={isRtl ? 'rtl' : 'ltr'}>
       
@@ -114,11 +126,13 @@ export default function About({ siteContent }: AboutProps) {
             <h3 className="text-xl md:text-2xl font-display text-white border-b border-gold-400/20 pb-2.5">
               {t('aboutHeaderEditorial')}
             </h3>
+            {bioP11 && (
+              <p className="text-gray-300 font-sans leading-relaxed text-sm">
+                {bioP11}
+              </p>
+            )}
             <p className="text-gray-300 font-sans leading-relaxed text-sm">
-              {t('aboutBioP1')}
-            </p>
-            <p className="text-gray-300 font-sans leading-relaxed text-sm">
-              {t('aboutBioP2')}
+              {bioP2}
             </p>
           </div>
 
@@ -152,6 +166,17 @@ export default function About({ siteContent }: AboutProps) {
                 >
                   <Headphones className="w-4 h-4 transition-transform group-hover:rotate-12 duration-300" />
                   <span className="text-xs font-mono font-bold tracking-wider uppercase">Spotify</span>
+                </a>
+
+                {/* Apple Music */}
+                <a 
+                  href="https://music.apple.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/60 border border-gold-400/20 text-gold-300 hover:text-black hover:bg-gold-400 hover:border-gold-400 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] cursor-pointer"
+                >
+                  <Apple className="w-4 h-4 transition-transform group-hover:-rotate-12 duration-300" />
+                  <span className="text-xs font-mono font-bold tracking-wider uppercase">Apple Music</span>
                 </a>
 
                 {/* SoundCloud */}
