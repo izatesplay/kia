@@ -49,6 +49,20 @@ export const getApiUrl = (endpoint: string): string => {
   else if (endpoint === '/api/upload') {
     action = 'upload';
   }
+  // 5. Check for settings endpoints
+  else if (endpoint === '/api/settings') {
+    action = 'settings';
+  }
+  // 6. Check for gallery endpoints
+  else if (endpoint.startsWith('/api/gallery')) {
+    const parts = endpoint.split('/'); // ['', 'api', 'gallery', 'id']
+    if (parts.length > 3 && parts[3]) {
+      id = parts[3];
+      action = 'delete_gallery';
+    } else {
+      action = 'gallery';
+    }
+  }
 
   // Build the URL for api.php
   let url = `api.php?action=${action}`;

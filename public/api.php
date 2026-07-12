@@ -101,6 +101,16 @@ $createTablesQueries = [
     "settings" => "CREATE TABLE IF NOT EXISTS settings (
         name VARCHAR(100) PRIMARY KEY,
         value TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+
+    "gallery" => "CREATE TABLE IF NOT EXISTS gallery (
+        id VARCHAR(100) PRIMARY KEY,
+        title VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+        titleEn VARCHAR(255),
+        imageUrl VARCHAR(500) NOT NULL,
+        description TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+        descriptionEn TEXT,
+        createdAt VARCHAR(100)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
 ];
 
@@ -130,6 +140,48 @@ if ($settingsCount['count'] == 0) {
     $stmt->bind_param("s", $defaultSettings);
     $stmt->execute();
     $stmt->close();
+}
+
+// مقداردهی اولیه گالری پیش‌فرض در اولین اجرا
+$checkGallery = $mysqli->query("SELECT COUNT(*) as count FROM gallery");
+$galleryCount = $checkGallery->fetch_assoc();
+if ($galleryCount['count'] == 0) {
+    $defaultGallery = [
+        [
+            'id' => 'g-1',
+            'title' => 'نوازندگی در استودیو نوستالژیا',
+            'titleEn' => 'Playing at Nostalgia Studio',
+            'imageUrl' => './assets/images/about_image_1_1783213310316.jpg',
+            'description' => 'تمرین و صدابرداری قطعات جدید جاز در استودیوی شخصی با تجهیزات آنالوگ قدیمی.',
+            'descriptionEn' => 'Rehearsing and recording new jazz tracks in the personal studio with vintage analog gear.',
+            'createdAt' => '۱۴۰۲/۱۰/۱۲'
+        ],
+        [
+            'id' => 'g-2',
+            'title' => 'اجرای زنده تور تهران',
+            'titleEn' => 'Live Performance Tehran Tour',
+            'imageUrl' => './assets/images/about_image_2_1783213319351.jpg',
+            'description' => 'کنسرت دونوازی گیتار با همراهی ارکستر زهی در تالار وحدت تهران.',
+            'descriptionEn' => 'Guitar duet concert accompanied by the string orchestra at Vahdat Hall, Tehran.',
+            'createdAt' => '۱۴۰۲/۱۱/۰۵'
+        ],
+        [
+            'id' => 'g-3',
+            'title' => 'تنظیم قطعه باران پاییز',
+            'titleEn' => 'Arranging Autumn Rain',
+            'imageUrl' => './assets/images/hero_image_1_1783213279475.jpg',
+            'description' => 'پشت صحنه تولید و تنظیم قطعه باران پاییز با استفاده از سازهای آکوستیک و الکترونیک.',
+            'descriptionEn' => 'Behind the scenes of producing and arranging Autumn Rain using acoustic and electronic instruments.',
+            'createdAt' => '۱۴۰۲/۱۲/۰۲'
+        ]
+    ];
+
+    foreach ($defaultGallery as $item) {
+        $stmt = $mysqli->prepare("INSERT INTO gallery (id, title, titleEn, imageUrl, description, descriptionEn, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssssss", $item['id'], $item['title'], $item['titleEn'], $item['imageUrl'], $item['description'], $item['descriptionEn'], $item['createdAt']);
+        $stmt->execute();
+        $stmt->close();
+    }
 }
 
 // --- ۵. مسیریابی درخواست‌ها بر اساس اکشن ---
@@ -501,6 +553,108 @@ switch ($action) {
             } else {
                 send_error("خطا در ویرایش تنظیمات رنگ: " . $stmt->error);
             }
+        }
+        break;
+
+    // ط. دریافت و افزودن تصاویر گالری (Gallery)
+    case 'gallery':
+        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+            $result = $mysqli->query("SELECT * FROM gallery ORDER BY id DESC");
+            $gallery = [];
+            while ($row = $result->fetch_assoc()) {
+                $gallery[] = $row;
+            }
+            send_success($gallery);
+        } 
+        elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $input = json_decode(file_get_contents("php://input"), true);
+            if (!$input) {
+                send_error("اطلاعات ارسالی نامعتبر است.");
+            }
+            
+            $id = isset($input['id']) ? $input['id'] : 'g-custom-' . round(microtime(true) * 1000);
+            $title = isset($input['title']) ? trim($input['title']) : '';
+            $titleEn = isset($input['titleEn']) ? trim($input['titleEn']) : 'New Image';
+            $imageUrl = isset($input['imageUrl']) ? trim($input['imageUrl']) : '';
+            $description = isset($input['description']) ? trim($input['description']) : '';
+            $descriptionEn = isset($input['descriptionEn']) ? trim($input['descriptionEn']) : '';
+            $createdAt = isset($input['createdAt']) ? trim($input['createdAt']) : '';
+            
+            if (empty($createdAt)) {
+                $createdAt = date("Y/m/d");
+            }
+
+            if (empty($imageUrl)) {
+                send_error("آدرس تصویر اجباری است.");
+            }
+
+            $stmt = $mysqli->prepare("INSERT INTO gallery (id, title, titleEn, imageUrl, description, descriptionEn, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssssss", $id, $title, $titleEn, $imageUrl, $description, $descriptionEn, $createdAt);
+            
+            if ($stmt->execute()) {
+                $stmt->close();
+                // برگشت دادن کل تصاویر
+                $result = $mysqli->query("SELECT * FROM gallery ORDER BY id DESC");
+                $gallery = [];
+                while ($row = $result->fetch_assoc()) {
+                    $gallery[] = $row;
+                }
+                send_success(["success" => true, "gallery" => $gallery]);
+            } else {
+                send_error("خطا در ثبت تصویر گالری: " . $stmt->error);
+            }
+        }
+        break;
+
+    // ی. حذف تصویر گالری بر اساس ID
+    case 'delete_gallery':
+        if ($_SERVER['REQUEST_METHOD'] == 'DELETE' || $_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'GET' || isset($_GET['id'])) {
+            $id = isset($_GET['id']) ? $_GET['id'] : '';
+            if (empty($id)) {
+                $input = json_decode(file_get_contents("php://input"), true);
+                $id = isset($input['id']) ? $input['id'] : '';
+            }
+
+            if (empty($id)) {
+                send_error("شناسه تصویر جهت حذف ارسال نشده است.");
+            }
+
+            $imageUrl = '';
+            $selectStmt = $mysqli->prepare("SELECT imageUrl FROM gallery WHERE id = ?");
+            $selectStmt->bind_param("s", $id);
+            $selectStmt->execute();
+            $selectResult = $selectStmt->get_result();
+            if ($row = $selectResult->fetch_assoc()) {
+                $imageUrl = $row['imageUrl'];
+            }
+            $selectStmt->close();
+
+            if (!empty($imageUrl)) {
+                $cleanPath = ltrim(str_replace('./', '', $imageUrl), '/');
+                if (strpos($cleanPath, 'uploads/') === 0) {
+                    $physicalPath = __DIR__ . '/' . $cleanPath;
+                    if (file_exists($physicalPath)) {
+                        @unlink($physicalPath);
+                    }
+                }
+            }
+
+            $stmt = $mysqli->prepare("DELETE FROM gallery WHERE id = ?");
+            $stmt->bind_param("s", $id);
+            
+            if ($stmt->execute()) {
+                $stmt->close();
+                $result = $mysqli->query("SELECT * FROM gallery ORDER BY id DESC");
+                $gallery = [];
+                while ($row = $result->fetch_assoc()) {
+                    $gallery[] = $row;
+                }
+                send_success(["success" => true, "gallery" => $gallery]);
+            } else {
+                send_error("خطا در حذف تصویر گالری از دیتابیس: " . $stmt->error);
+            }
+        } else {
+            send_error("متد درخواست نامعتبر است.", 405);
         }
         break;
 
